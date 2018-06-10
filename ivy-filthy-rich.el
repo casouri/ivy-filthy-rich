@@ -1,4 +1,4 @@
-;;; ivy-filthy-rich.el --- Richer information for ivy candidates
+;;; ivy-filthy-rich.el --- Richer information for ivy candidates, fully customizable
 
 ;; Copyright (C) 2018 Yuan Fu
 
@@ -38,8 +38,9 @@
   :type 'string
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-left-pad ?\s
-  "The left padding of `ifrich-delimiter'.
+
+(defcustom ifrich-padding ?\s
+  "The  padding of `ifrich-delimiter'.
 It is used when there are extra space.
 The length of the pad has to be one.
 If not, `ivy-filth-rich' will fallback to using space to pad.
@@ -48,18 +49,15 @@ Currently only support character, because `make-string' only accept that."
   :type 'character
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-right-pad nil
-  "The right padding of `ifrich-delimiter'.
-It is used when there are extra space.
-The length of the pad has to be one.
-If not, `ivy-filth-rich' will fallback to using space to pad.
-
-Currently only support character, because `make-string' only accept that."
-  :type 'character
+(defcustom ifrich-pad-side 'right
+  "The side which padding is pad to.
+Either left or right"
+  :type 'symbol
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-max-length 150
-  "The max length of one entry (one line on ivy buffer)."
+(defcustom ifrich-max-length 0
+  "The max length of one entry (one line on ivy buffer).
+If it is zero, the max-length is (window-width)"
   :type 'number
   :group 'ivy-filthy-rich)
 
@@ -68,89 +66,162 @@ Currently only support character, because `make-string' only accept that."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
-(defvar ifrich-default-switch-buffer-format
-  "The default format for `ivy-switch-buffer'.
-Format rule in info (C-h i)."
-  '(((value . (lambda (candidate) '(candidate))) (prop . 0.2) (candidate . t))
-    ((value . ifrich-get-major-mode) (prop . 0.2) (face . ((t (:foreground "red")))))
-    ((value . ifrich-get-dir) (prop . 0.2) (face . ((t (:foreground "green")))))))
+;;
+;; Default formaat
+;;
 
-;; first entry is cosidered the candidate
+(defvar ifrich-default-switch-buffer-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
+    ((value . ifrich-get-major-mode) (prop . 0.4) (face . (t (:foreground "#61AFEF"))))
+    ((value . ifrich-get-dir) (prop . 0.4) (face . (t (:foreground "#98C379")))))
+  "The default format for `ivy-switch-buffer'.
+Format rule in info (C-h i).")
+
 ;; the value function needs to return a list of possible values, sorted from longest to shortest
 ;; candiate info has to have a key 'candidate equal to t
 
+;;
+;; Info Function (Return info string list, used in format)
+;;
+
+(defun ifrich-get-major-mode (candidate)
+  "Return major mode of buffer (CANDIDATE)."
+  (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
+
+
+(defun ifrich-get-dir (candidate)
+  "Return directory of buffer (CANDIDATE)."
+  (let ((dir (buffer-local-value 'default-directory (get-buffer candidate))))
+    (list dir
+          (file-name-nondirectory (directory-file-name dir)))))
 
 ;;
-;; Function
+;; Deploy function
+;;
+
+(defun ifrich-set-function ()
+  "Set transform functions."
+  (ivy-set-display-transformer 'ivy-switch-buffer (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format))))
+
+;;
+;; Logic Function
 ;;
 
 (defun ifrich--format-candidate (candidate format)
   "Format CANDIDATE into a rich candidate according to FORMAT."
-  ;; replace functions with actual info string
-  (let ((info-list nil)
-        (entry-string-without-candidate "")
-        (final-entry-string ""))
+  ;; 1. replace functions with actual info string
+  (let ((info-list ())
+        (entry-sequence ())
+        (format (copy-tree format))
+        (ifrich-max-length (when (equal 0 ifrich-max-length)
+                             (window-width))))
     (dolist (format-element format)
       (let ((func (alist-get 'value format-element)))
         ;; evaluate the function and replace it with returned value list
         (setf (alist-get 'value format-element) (funcall func candidate))
         ;; add the modified entry to new list
         (add-to-list 'info-list format-element t)))
-    ;; trim entry
+    ;; 2. trim each part(info) of entry to it's planned max length (* prop ifrich-max-length)
     (setq info-list (ifrich--trim-entry-to-max-length info-list))
-    ;; format info-list into a entry for ivy to display
+    ;; 3. format info-list into a sequence of strings to be concated
+    ;; 4. sequence to string
     ;; each info is an alist with key: value, prop, etc
-    ;; TODO a separate func
+    (apply 'ifrich--concat-entry-sequence (ifrich--format-to-sequence info-list))))
+
+(defun ifrich--format-to-sequence (info-list)
+  "Turn a format (INFO-LIST) into a sequence of strings.
+The first step replaced the functions in format with a list of possible strings.
+The second step removes those possible strings that are too long.
+This function colorize the string and add paddings.
+Then all the fourth function to join that sequence into one string and return that.
+
+The sequence is a list of colorized strings and paddings
+For example, (left-pad candidate right-pad left-pad value-1 right-pad)
+(\"\" \"candddddddddidate\" \"      \" \"\" \"value 1\" \"       \")
+Note that all strings have properties
+
+Return (entry-sequence candidate-index candidate-planned-len)
+"
+  (let ((candidate-planned-len 0)
+        (candidate-index 0)
+        (index 0)
+        (entry-sequence ()))
     (dolist (info info-list)
-      (unless (ifrich--is-candidate info)
-        (let* ((value (car (alist-get 'value info)))
-               (max-info-len (* ifrich-max-length (alist-get 'prop info)))
-               ;; if value is shorter than max-info-length,
-               ;; it needs to be padded.
-               (extra-info-space (- max-info-len (length value)))
-               ;; right padded before left
-               (right-extra-count (if ifrich-left-pad ; delimiter's left is info's right
-                                      (ceiling (/ extra-info-space 2))
-                                    0))
-               (left-extra-count (if ifrich-right-pad ; delimiter's right is info's left
-                                     (- extra-info-space right-extra-count)
-                                   0))
-               (right-pad (if ifrich-left-pad
-                              (make-string right-extra-count ifrich-left-pad )
-                            ""))
-               (left-pad (if ifrich-right-pad
-                             (make-string left-extra-count ifrich-right-pad )
-                           ""))
-               (padded-value nil))
-          (put-text-property 0 (length value) 'face (alist-get 'face info) value)
-          (setq padded-value
-                (concat left-pad value right-pad))
-          (when (and (equal 0 right-extra-count) (equal 0 left-extra-count))
-            (warn "`ifrich-left-pad' and `ifrich-right-pad' cannot both be nil!
-Automatically setting left pad to space (align left).")
-            (setq left-pad (make-string extra-info-space ?\s)))
-          (setq entry-string-without-candidate (concat entry-string-without-candidate padded-value)))))
-    ;; you thought that's all? naive!
-    ;; TODO a seprate func
-    (let* ((entry-without-candidate-max-len (- ifrich-max-length candidate))
-           (actual-len (length entry-string-without-candidate))
-           (max-minus-actual-length (- entry-without-candidate-max-len actual-len))
-          (final-entry-without-candidate
-           (if (< max-minus-actual-length 0)
-               (let ((trimmed-entry (substring
-                                     entry-string-without-candidate
-                                     (+ max-minus-actual-length actual-len) (1- actual-len)))
-                     (index 0)
-                     (pad (char-to-string (or ifrich-right-pad ifrich-left-pad))))
-                 (while (not (equal pad
-                                    (substring-no-properties trimmed-entry)))
-                   ;;TODO a separate func
-                   (setq trimmed-entry (concat (substring trimmed-entry 0 index)
-                                               pad
-                                               (substring trimmed-entry (1+ index) (length trimmed-entry))))
-                   (setq index (1+ index)))
-                 (concat candidate trimmed-entry))
-             final-entry-string))))))
+      (let* ((value (car (alist-get 'value info)))
+             (max-info-len (floor (* ifrich-max-length (alist-get 'prop info))))
+             ;; if value is shorter than max-info-length,
+             ;; it needs to be padded.
+             (extra-info-space (- max-info-len (length value)))
+             ;; make sure it is >= 0
+             (extra-info-space (if (> extra-info-space 0)
+                                   extra-info-space
+                                 0))
+             ;; right padded before left
+             (pad (make-string extra-info-space ifrich-padding))
+             (left-pad (if (equal 'left ifrich-pad-side) pad ""))
+             (right-pad (if (equal 'right ifrich-pad-side) pad ""))
+             (value-with-pad ()))
+        ;; coloring
+        (put-text-property 0 (length value) 'face (alist-get 'face info) value)
+        ;; padding
+        (setq value-with-pad
+              (list left-pad value right-pad))
+        ;; record candidate spec
+        (when (ifrich--is-candidate info)
+          (setq candidate-index index)
+          (setq candidate-planned-len max-info-len))
+        ;; add to entry
+        (setq entry-sequence (append entry-sequence value-with-pad))
+        (setq index (1+ index))))
+    ;; entry-sequence is a list of form: (left-pad value right-pad left-pad value right-pad))
+    (list entry-sequence candidate-index candidate-planned-len)))
+
+(defun ifrich--concat-entry-sequence (seq candidate-index candidate-planned-length)
+  "Concat all the elements in entry sequence SEQ together.
+CANDIDATE-INDEX is the index of candidate if you consider left-pad, value and right-pad one element.
+In another word, index of left-pad of candidate in SEQ is (* 3 CANDIDATE-INDEX),
+index of candidate value is (1+ (* 3 CANDIDATE-INDEX)).
+
+This function also ensures that candidate value can overwrite other parts:
+Increase CANDIDATE-PLANNED-LENGTH if needs to.
+|<- planned ->|
+cannd          part1          part2
+cannndddddddd  part1          part2
+if not enough, increase to:
+|<-- new planned-->|
+cannnnnnnnnnnnnnd             part2"
+  (let* ((candidate-real-index (1+ (* 3 candidate-index)))
+         (index-after-candidate (1+ candidate-real-index))
+         (candidate (nth candidate-real-index seq))
+         (candidate-pad-length (length (nth index-after-candidate seq)))
+         (candidate-len (length candidate))
+         ;; later we will delete some element of seq
+         (seq (copy-tree seq)))
+    ;; 1. make sure candidate has enought space
+    (when (equal 0 candidate-pad-length)
+      (while (> candidate-len candidate-planned-length)
+      ;; give the space of the element right after candidate to candidate
+      (setq candidate-planned-length
+            (+ candidate-planned-length
+               (length (nth index-after-candidate seq))))
+      (ifrich--delete-nth index-after-candidate seq))
+    ;; 2. concat everything together
+    ;; 2.1 pad candidate to have length of candidate-planned-length
+    (ifrich--set-nth candidate-real-index seq
+                     (concat candidate
+                             (make-string
+                              (- candidate-planned-length candidate-len)
+                              ifrich-padding))))
+    ;; 2.2 concat everything
+    (apply 'concat seq)))
+
+(defun ifrich--delete-nth (index seq)
+  "Delete the INDEX th element of SEQ."
+  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq)))
+
+(defun ifrich--set-nth (index seq newval)
+  "Set the INDEX th element of SEQ to NEWVAL."
+  (setcar (nthcdr index seq) newval))
 
 ;; test code
 ;; (let* ((format-element '((value . (lambda (str) "hahaha"))))
@@ -161,13 +232,9 @@ Automatically setting left pad to space (align left).")
 ;;   (add-to-list 'info-list format-element)
 ;;   info-list)
 
-;; unused
-(defun ifrich--calculate-entry-length (entry)
-  "Calculate the length of the candidate ENTRY (info-alist) (one line in ivy buffer)."
-  (let ((entry-len 0))
-    (dolist (element entry)
-      (setq entry-len (+ entry-len (length (car (alist-get 'value element))))))
-    (+ entry-len (* (1- (length entry)) (length ifrich-delimiter)))))
+(defun ifrich--calculate-entry-length (seq)
+  "Calculate the length of the candidate SEQ (a list of string) (one line in ivy buffer)."
+  (apply 'concat seq))
 
 (defun ifrich--is-candidate (info)
   "Check if the INFO element represents candidate."
@@ -176,7 +243,7 @@ Automatically setting left pad to space (align left).")
     nil))
 
 (defun ifrich--trim-entry-to-max-length (info-list)
-"Try to fit each info into its max-length and return the final info-list.
+"Try to fit each info into its max-length and return the final INFO-LIST.
 Each info's max length is calculated by `ifrich-max-length' x info proportion (prop).
 
 Each info is an alist with key: value, prop, etc.
@@ -197,16 +264,16 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
     ;; main logic starts here
     (dolist (info info-list)
       (unless (ifrich--is-candidate info)
-        (let* ((value-list (alist-get 'value info-list))
-               (first-value-len (length (car value-list)))
+        (let* ((value-list (alist-get 'value info))
                (info-max-len (floor (* ifrich-max-length (alist-get 'prop info)))))
           ;; try next value until fit or only one value left
-          (while (and (< info-max-len first-value-len)
+          (while (and (< info-max-len (length (car value-list)))
                       (< 1 (length value-list)))
-            (pop (alist-get 'value info-list))) ; info-list wouldn't change if pop value-list
+            (pop (alist-get 'value info)) ; info-list wouldn't change if pop value-list
+            (pop value-list)) ; pop value-list to examine next value
           ;; only one left but still doesn't fit
-          (when (< info-max-len first-value-len)
-            (push (substring (pop (alist-get 'value info-list)) 0 (1- info-max-len))
+          (when (< info-max-len (length (car value-list)))
+            (push (substring (pop (alist-get 'value info)) 0 (1- info-max-len))
                   (alist-get 'value info-list))))))
     info-list))
 
@@ -214,6 +281,14 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
 ;;
 ;; Test
 ;;
+
+(defun ifrich-run-test ()
+  "Run test."
+  ;; (ifrich--calculate-entry-length-test)
+  ;; (ifrich--trim-entry-to-max-length-test)
+  (ifrich--format-candidate-test)
+  (ifrich--format-to-sequence-test)
+  (ifrich--concat-entry-sequence-test))
 
 (defun ifrich--calculate-entry-length-test ()
   "Test."
@@ -238,20 +313,56 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
         (message "pass")
       (message "ifrich-trim-entry-to-max-length-test 2 failed."))))
   
-
 (defun ifrich--format-candidate-test ()
   "Test."
   (let ((format '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
                  ((value . (lambda (candidate) '("looooooooong2" "short"))) (prop . 0.4) (face . ((t (:foreground "red")))))
                  ((value . (lambda (candidate) '("looooooooooong3" "short one"))) (prop . 0.4) (face . ((t (:foreground "green")))))))
-         (ifrich-left-pad ?\s)
-         (ifrich-right-pad nil)
-         (ifrich-max-length 150))
-    (message (ifrich--format-candidate "cand" format))
-    ;; (if (equal (ifrich--format-candidate "cand" format) "")
+        (ifrich-padding ?\s)
+        (ifrich-max-length 150)
+        (expected1 "canddddddddddddddddddddddddddddddddddddddddddddddddddddddddd                              looooooooooong3                                             ")
+        (candidate1 "canddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"))
+    (setq sss (ifrich--format-candidate candidate1 format))
+    ;; (if (equal (substring-no-properties (ifrich--format-candidate candidate1 format)) expected1)
     ;;     (message "pass")
     ;;   (message "ifrich--format-candidate-test 1 failed."))
     ))
+
+(defun ifrich--format-to-sequence-test ()
+  "Test."
+  (let ((info-list '(((value . ("canddddddddddddd")) (prop . 0.2) (candidate . t))
+                     ((value . ("value1")) (prop . 0.4) (face . ((t (:foreground "red")))))
+                     ((value . ("value2")) (prop . 0.4) (face . ((t (:foreground "green")))))))
+        (ifrich-padding ?\s)
+        (ifrich-max-length 150)
+        (expected '(("" #("canddddddddddddd" 0 16 (face nil)) "              " "" #("value1" 0 6 (face ((t (:foreground "red"))))) "                                                      " "" #("value2" 0 6 (face ((t (:foreground "green"))))) "                                                      ")
+                    0 30)))
+    ;; (print (ifrich--format-to-sequence info-list))
+    (if (equal (ifrich--format-to-sequence info-list) expected)
+        (message "pass")
+      (message "ifrich--format-to-sequence-test 1 failed."))))
+
+(defun ifrich--concat-entry-sequence-test ()
+  "Test.
+original:
+planned-cand-len:
+|<--- plan -->|   (15)
+               [value1]         [value2]         |
+actual cand:
+[cannnnnnnnnnnnnnnd]
+
+result:
+|<---- new plan ----->|
+[cannnnnnnnnnnnnnnd]            [value2]         |
+"
+  (let ((ifrich-max-length 40)
+        (seq '("" "[cannnnnnnnnnnnnnnd]" "" "" "[value1]" "         " "" "[value2]" "         ")))
+    ;; (print (ifrich--concat-entry-sequence seq 0 15))
+    ;; (print "[cannnnnnnnnnnnnnnd]            [value2]         ")
+    ;; (print seq)
+    (if (equal (ifrich--concat-entry-sequence seq 0 15) "[cannnnnnnnnnnnnnnd]            [value2]         ")
+        "pass"
+      "ifrich--concat-entry-sequence-test 1 failed.")))
 
 
 (provide 'ivy-filthy-rich)
