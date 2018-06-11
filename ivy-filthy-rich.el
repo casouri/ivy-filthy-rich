@@ -57,7 +57,7 @@ Either left or right"
 
 (defcustom ifrich-max-length 0
   "The max length of one entry (one line on ivy buffer).
-If it is zero, the max-length is (window-width)"
+If it is zero, the max-length is (frame-width)"
   :type 'number
   :group 'ivy-filthy-rich)
 
@@ -70,30 +70,68 @@ If it is zero, the max-length is (window-width)"
 ;; Default formaat
 ;;
 
-(defvar ifrich-default-switch-buffer-format
-  '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
-    ((value . ifrich-get-major-mode) (prop . 0.4) (face . (t (:foreground "#61AFEF"))))
-    ((value . ifrich-get-dir) (prop . 0.4) (face . (t (:foreground "#98C379")))))
-  "The default format for `ivy-switch-buffer'.
-Format rule in info (C-h i).")
-
 ;; the value function needs to return a list of possible values, sorted from longest to shortest
 ;; candiate info has to have a key 'candidate equal to t
 
+(defvar ifrich-default-switch-buffer-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
+    ((value . ifrich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
+    ((value . ifrich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
+  "The default format for `ivy-switch-buffer'.
+Format rule in info (C-h i).")
+
+(defvar ifrich-default-info-lookup-symbol-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
+    ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+  "The default format for `counsel-info-lookup-symbol'.
+Format rule in info (C-h i).")
+
+(defvar ifrich-default-M-x-format ifrich-default-info-lookup-symbol-format
+  "The default format for `counsel-M-x'.
+Format rule in info (C-h i).")
 ;;
+(defvar ifrich-default-describe-function-format ifrich-default-info-lookup-symbol-format
+  "The default format for `counsel-describe-function'.
+Format rule in info (C-h i).")
+
+(defvar ifrich-default-describe-variable-format ifrich-default-info-lookup-symbol-format
+  "The default format for `counsel-describe-variable'.
+Format rule in info (C-h i).")
+
+(defvar ifrich-default-describe-face-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
+    ((value . ifrich--get-face) (prop . 0.7)))
+  "The default format for `counsel-faces'.
+Format rule in info (C-h i).")
+
 ;; Info Function (Return info string list, used in format)
 ;;
 
-(defun ifrich-get-major-mode (candidate)
+(defun ifrich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
   (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
 
 
-(defun ifrich-get-dir (candidate)
+(defun ifrich--get-dir (candidate)
   "Return directory of buffer (CANDIDATE)."
   (let ((dir (buffer-local-value 'default-directory (get-buffer candidate))))
     (list dir
           (file-name-nondirectory (directory-file-name dir)))))
+
+(defun ifrich--get-doc (candidate)
+  "Return the first sentense of the documentation of CANDIDATE as a symbol."
+  (let ((doc (documentation (intern candidate))))
+    (string-match "^.+?\\." doc)
+    (list (match-string 0 doc))))
+
+(defun ifrich--get-face (candidate)
+  "Return a test string with face CANDIDATE applied."
+  (let ((demo-list '("Look up here in the corner of the dooway! Here I am. Look, I'm waving!"
+                     "Look up here in the corner of the dooway!"
+                     "\"Salutations!\" said the voice.")))
+    (dolist (demo demo-list)
+      (put-text-property 0 (length demo) 'face (intern candidate) demo))
+    demo-list))
 
 ;;
 ;; Deploy function
@@ -101,7 +139,13 @@ Format rule in info (C-h i).")
 
 (defun ifrich-set-function ()
   "Set transform functions."
-  (ivy-set-display-transformer 'ivy-switch-buffer (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format))))
+  (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
+  (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
+  (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
+  (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
+  (ivy-set-display-transformer 'counsel-info-lookup-symbol (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-info-lookup-symbol-format)))
+  (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
+  )
 
 ;;
 ;; Logic Function
@@ -114,7 +158,7 @@ Format rule in info (C-h i).")
         (entry-sequence ())
         (format (copy-tree format))
         (ifrich-max-length (when (equal 0 ifrich-max-length)
-                             (window-width))))
+                             (1- (frame-width)))))
     (dolist (format-element format)
       (let ((func (alist-get 'value format-element)))
         ;; evaluate the function and replace it with returned value list
@@ -162,7 +206,9 @@ Return (entry-sequence candidate-index candidate-planned-len)
              (right-pad (if (equal 'right ifrich-pad-side) pad ""))
              (value-with-pad ()))
         ;; coloring
-        (put-text-property 0 (length value) 'face (alist-get 'face info) value)
+        (let ((face-spec (alist-get 'face info)))
+          (when face-spec
+            (put-text-property 0 (length value) 'face face-spec value)))
         ;; padding
         (setq value-with-pad
               (list left-pad value right-pad))
