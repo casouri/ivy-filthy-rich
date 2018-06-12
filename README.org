@@ -1,0 +1,129 @@
+#+TITLE: ivy-filthy-rich.el
+
+This package adds more information on ivy candidates.
+It also allows you to customize what is the information and how are they displayed.
+
+* Showcase
+
+[[./m-x.png]]
+
+[[./function.png]]
+
+* Install
+
+The package is not in melpa, so you need to download and load it yourself.
+
+* Useage
+  
+** Out of the box
+   
+#+BEGIN_SRC lisp
+(ivy-filthy-rich-mode)
+#+END_SRC
+
+** Simple customizations
+
+#+BEGIN_SRC lisp
+(defcustom ifrich-padding ?\s
+  "The padding of `ifrich-delimiter'.
+It is used when there are extra space.
+The length of the pad has to be one.
+If not, `ivy-filth-rich' will fallback to using space to pad.
+
+Currently only support character, because `make-string' only accept that."
+  :type 'character
+  :group 'ivy-filthy-rich)
+
+(defcustom ifrich-pad-side 'right
+  "The side which padding is pad to.
+Either left or right.
+
+Left means align right,
+right means align left."
+  :type 'symbol
+  :group 'ivy-filthy-rich)
+
+(defcustom ifrich-max-length 0
+  "The max length of one entry (one line on ivy buffer).
+If it is zero, the max-length is (1- (frame-width))"
+  :type 'number
+  :group 'ivy-filthy-rich)
+#+END_SRC
+
+** Deeper customization
+
+Basically, there are three steps in a full customization.
+
+*** 0. prepare some info function
+
+An info function is a function which you pass in a candidate 
+and it returns some extra information about the candidate.
+
+You can checkout default ones under
+#+BEGIN_SRC lisp
+;;
+;; Info Function (Return info string list, used in format)
+;;
+#+END_SRC
+
+For example:
+#+BEGIN_SRC lisp
+(defun ifrich--get-major-mode (candidate)
+  "Return major mode of buffer (CANDIDATE)."
+  (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
+#+END_SRC
+
+This function returns the major mode in which the candidate is.
+Actually, it returns a list, rather than a string. The reason is explained below.
+
+
+*** 1. declare the format
+
+Now you need to declare a format for a particular ivy-function.
+
+Default ones are under
+#+BEGIN_SRC lisp
+;;
+;; Default formaat
+;;
+#+END_SRC
+
+For example,
+#+BEGIN_SRC lisp
+(defvar ifrich-default-switch-buffer-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
+    ((value . ifrich--get-major-mode)                (prop . 0.2) (face . (:foreground "#61AFEF")))
+    ((value . ifrich--get-dir)                       (prop . 0.6) (face . (:foreground "#98C379"))))
+  "The default format for `ivy-switch-buffer'.
+Format rule in info (C-h i).")
+#+END_SRC
+
+As you see, the format is a list of alists. Each alist is a piece of extra information (except candidate).
+And the list represents a line in ivy buffer.
+
+The order of the infos is the order of them in ivy buffer, from left to right.
+Note that candidate doesn't need to be the first one.
+
+Avaliable keys for alists are:
+- value :: the function that returns a list of possible information strings.
+           Those strings sorts from the longest to the shortest.
+           =ivy-filth-rich= will try to use the longest string,
+           if it doesn't fit, =ivy-filthy-rich= will try the next one, and so on.
+           
+- prop :: the length that the info can occupy. It is a fraction against =ifrich-max-length=.
+          =0.3= means the piece of info will get 30% of the max length.
+          All the props don't have to add up to 1, though.
+          
+- face :: The face you want the info be in.
+          
+- candidate :: A boolean that marks which info is original candidate. There can be only one candidate.
+               And there is no need to add =(candidate . nil)= to other infos.
+               
+
+*** 2. deploy your format
+    
+#+BEGIN_SRC lisp
+(ivy-set-display-transformer 'ivy-function-you-want-to-modify (lambda (candidate) (ifrich--format-candidate candidate your-customized-format)))
+#+END_SRC
+
+Simple, =ifrich--format-candidate= takes a candidate string and a format, and returns the modified string.
