@@ -33,14 +33,8 @@
   "Customizations of ivy-filthy-rich"
   :prefix "ifrich-")
 
-(defcustom ifrich-delimiter "    "
-  "The delimiter between info groups."
-  :type 'string
-  :group 'ivy-filthy-rich)
-
-
 (defcustom ifrich-padding ?\s
-  "The  padding of `ifrich-delimiter'.
+  "The padding of `ifrich-delimiter'.
 It is used when there are extra space.
 The length of the pad has to be one.
 If not, `ivy-filth-rich' will fallback to using space to pad.
@@ -51,13 +45,16 @@ Currently only support character, because `make-string' only accept that."
 
 (defcustom ifrich-pad-side 'right
   "The side which padding is pad to.
-Either left or right"
+Either left or right.
+
+Left means align right,
+right means align left."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
 (defcustom ifrich-max-length 0
   "The max length of one entry (one line on ivy buffer).
-If it is zero, the max-length is (frame-width)"
+If it is zero, the max-length is (1- (frame-width))"
   :type 'number
   :group 'ivy-filthy-rich)
 
@@ -104,6 +101,7 @@ Format rule in info (C-h i).")
   "The default format for `counsel-faces'.
 Format rule in info (C-h i).")
 
+;;
 ;; Info Function (Return info string list, used in format)
 ;;
 
@@ -121,8 +119,9 @@ Format rule in info (C-h i).")
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
   (let ((doc (documentation (intern candidate))))
-    (string-match "^.+?\\." doc)
-    (list (match-string 0 doc))))
+    (if (and doc (string-match "^.+?\\." doc))
+        (list (match-string 0 doc))
+      '(""))))
 
 (defun ifrich--get-face (candidate)
   "Return a test string with face CANDIDATE applied."
@@ -146,6 +145,24 @@ Format rule in info (C-h i).")
   (ivy-set-display-transformer 'counsel-info-lookup-symbol (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-info-lookup-symbol-format)))
   (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
   )
+
+(define-minor-mode ivy-filthy-rich-mode
+  "A global minor mode that adds information to ivy candidates."
+  :global t
+  (if ivy-filthy-rich-mode
+      (progn  (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
+              (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
+              (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
+              (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
+              (ivy-set-display-transformer 'counsel-info-lookup-symbol (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-info-lookup-symbol-format)))
+              (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format))))
+    (ivy-set-display-transformer 'ivy-switch-buffer          nil)
+    (ivy-set-display-transformer 'counsel-describe-function  nil)
+    (ivy-set-display-transformer 'counsel-describe-variable  nil)
+    (ivy-set-display-transformer 'counsel-M-x                nil)
+    (ivy-set-display-transformer 'counsel-info-lookup-symbol nil)
+    (ivy-set-display-transformer 'counsel-describe-face      nil)
+    ))
 
 ;;
 ;; Logic Function
