@@ -1,7 +1,18 @@
 #+TITLE: ivy-filthy-rich.el
 
+[[./rich.png]]
+
 This package adds more information on ivy candidates.
 It also allows you to customize what is the information and how are they displayed.
+
+Inspired by [[https://github.com/Yevgnen/ivy-rich][ivy-rich]].
+
+*Features* 
+
+- add information to ivy buffer
+- customizable position
+- cuztomizable face
+- more to come if I can think of any
 
 * Showcase
 
