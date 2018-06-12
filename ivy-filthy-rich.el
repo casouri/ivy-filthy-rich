@@ -77,21 +77,19 @@ If it is zero, the max-length is (1- (frame-width))"
   "The default format for `ivy-switch-buffer'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-info-lookup-symbol-format
+(defvar ifrich-default-describe-function-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
     ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
-  "The default format for `counsel-info-lookup-symbol'.
-Format rule in info (C-h i).")
-
-(defvar ifrich-default-M-x-format ifrich-default-info-lookup-symbol-format
-  "The default format for `counsel-M-x'.
-Format rule in info (C-h i).")
-;;
-(defvar ifrich-default-describe-function-format ifrich-default-info-lookup-symbol-format
   "The default format for `counsel-describe-function'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-describe-variable-format ifrich-default-info-lookup-symbol-format
+(defvar ifrich-default-M-x-format ifrich-default-describe-function-format
+  "The default format for `counsel-M-x'.
+Format rule in info (C-h i).")
+
+(defvar ifrich-default-describe-variable-format
+  '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
+    ((value . ifrich--get-doc-property) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-describe-variable'.
 Format rule in info (C-h i).")
 
@@ -123,14 +121,22 @@ Format rule in info (C-h i).")
         (list (match-string 0 doc))
       '(""))))
 
+(defun ifrich--get-doc-property (candidate)
+  "Return the first sentense of the documentation of CANDIDATE as a symbol."
+  (let ((doc (documentation-property (intern candidate) 'variable-documentation)))
+    (if (and doc (string-match "^.+?\\." doc))
+        (list (match-string 0 doc))
+      '(""))))
+
 (defun ifrich--get-face (candidate)
   "Return a test string with face CANDIDATE applied."
-  (let ((demo-list '("Look up here in the corner of the dooway! Here I am. Look, I'm waving!"
-                     "Look up here in the corner of the dooway!"
-                     "\"Salutations!\" said the voice.")))
-    (dolist (demo demo-list)
-      (put-text-property 0 (length demo) 'face (intern candidate) demo))
-    demo-list))
+  (let ((demo (face-documentation (intern candidate))))
+    (if demo
+        (progn
+          (string-match "^.+?\\." demo)
+          (setq demo (match-string 0 demo)))
+      (setq demo "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!")
+      (list (propertize 0 (length demo) 'face (intern candidate) demo)))))
 
 ;;
 ;; Deploy function
@@ -142,25 +148,24 @@ Format rule in info (C-h i).")
   (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
   (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
   (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-  (ivy-set-display-transformer 'counsel-info-lookup-symbol (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-info-lookup-symbol-format)))
   (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
   )
 
 (define-minor-mode ivy-filthy-rich-mode
-  "A global minor mode that adds information to ivy candidates."
+  "A global minor mode that adds information to ivy candidates. I'm F****** Rich."
+  :lighter "IFRich"
   :global t
   (if ivy-filthy-rich-mode
-      (progn  (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
-              (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
-              (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
-              (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-              (ivy-set-display-transformer 'counsel-info-lookup-symbol (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-info-lookup-symbol-format)))
-              (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format))))
+      (progn
+        (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
+        (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
+        (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
+        (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
+        (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format))))
     (ivy-set-display-transformer 'ivy-switch-buffer          nil)
     (ivy-set-display-transformer 'counsel-describe-function  nil)
     (ivy-set-display-transformer 'counsel-describe-variable  nil)
     (ivy-set-display-transformer 'counsel-M-x                nil)
-    (ivy-set-display-transformer 'counsel-info-lookup-symbol nil)
     (ivy-set-display-transformer 'counsel-describe-face      nil)
     ))
 
@@ -344,6 +349,8 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
 ;;
 ;; Test
 ;;
+
+;; Don't use these tests, they are a mess
 
 (defun ifrich-run-test ()
   "Run test."
