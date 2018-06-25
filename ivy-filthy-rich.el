@@ -105,14 +105,18 @@ Format rule in info (C-h i).")
 
 (defun ifrich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
-  (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
+  (let ((buffer (get-buffer candidate)))
+    (when buffer
+      (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer)))))))
 
 
 (defun ifrich--get-dir (candidate)
   "Return directory of buffer (CANDIDATE)."
-  (let ((dir (buffer-local-value 'default-directory (get-buffer candidate))))
-    (list dir
-          (file-name-nondirectory (directory-file-name dir)))))
+  (let ((buffer (get-buffer candidate))
+        (dir (when buffer
+                 (buffer-local-value 'default-directory buffer))))
+    (when buffer (list dir
+          (file-name-nondirectory (directory-file-name dir))))))
 
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
