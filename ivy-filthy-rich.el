@@ -1,4 +1,4 @@
-;;; ivy-filthy-rich.el --- Richer information for ivy candidates, fully customizable
+;;; ivy-filthy-rich.el --- Richer information for ivy candidates
 
 ;; Copyright (C) 2018 Yuan Fu
 
@@ -19,10 +19,13 @@
 ;; URL: https://github.com/casouri/ivy-filthy-rich
 ;; Version: 0.0.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.4") (ivy "0.8.0"))
+;; Package-Requires: ((emacs "25") (ivy "0.8.0"))
 
 ;;; Commentary:
-;; 
+;;  To enable this package, run
+;; (ivy-filthy-rich-mode)
+;;
+;; For mor information, please read README.org.
 
 ;;; Code:
 
@@ -31,7 +34,8 @@
 
 (defgroup ivy-filthy-rich nil
   "Customizations of ivy-filthy-rich"
-  :prefix "ifrich-")
+  :prefix "ifrich-"
+  :group 'ivy-filthy-rich)
 
 (defcustom ifrich-padding ?\s
   "The padding of `ifrich-delimiter'.
@@ -160,6 +164,7 @@ Format rule in info (C-h i).")
   :lighter "IFRich"
   :global t
   (if ivy-filthy-rich-mode
+      (require 'ivy-filthy-rich)
       (progn
         (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
         (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
