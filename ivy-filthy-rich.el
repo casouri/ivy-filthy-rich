@@ -19,7 +19,7 @@
 ;; URL: https://github.com/casouri/ivy-filthy-rich
 ;; Version: 0.0.1
 ;; Keywords: convenience
-;; Package-Requires: ()
+;; Package-Requires: ((emacs "24.4") (ivy "0.8.0"))
 
 ;;; Commentary:
 ;; 
