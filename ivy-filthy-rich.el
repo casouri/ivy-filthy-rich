@@ -112,7 +112,7 @@ Format rule in info (C-h i).")
 
 (defun ifrich--get-dir (candidate)
   "Return directory of buffer (CANDIDATE)."
-  (let ((buffer (get-buffer candidate))
+  (let* ((buffer (get-buffer candidate))
         (dir (when buffer
                  (buffer-local-value 'default-directory buffer))))
     (when buffer (list dir
