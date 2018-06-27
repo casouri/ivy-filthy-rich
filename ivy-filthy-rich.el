@@ -164,7 +164,6 @@ Format rule in info (C-h i).")
   :lighter "IFRich"
   :global t
   (if ivy-filthy-rich-mode
-      (require 'ivy-filthy-rich)
       (progn
         (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
         (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
