@@ -202,6 +202,41 @@ Format rule in info (C-h i).")
     ;; each info is an alist with key: value, prop, etc
     (apply 'ifrich--concat-entry-sequence (ifrich--format-to-sequence info-list))))
 
+(defun ifrich--trim-entry-to-max-length (info-list)
+"Try to fit each info into its max-length and return the final INFO-LIST.
+Each info's max length is calculated by `ifrich-max-length' x info proportion (prop).
+
+Each info is an alist with key: value, prop, etc.
+
+The function tries the first value (the longest) of info's value list,
+if that doesn't fit, the funtion removes it and tries the formal second, now first
+value in the value list. And this goes on.
+
+If there is only one value left in the value list and it doesn't fit,
+the function trims it from its tail and fit it to the max length.
+
+In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
+  (if (<= ifrich-max-length 0)
+      (progn
+        (warn "ifrich-max-length has to be greater than 0! Current value is %s" ifrich-max-length)
+        nil)
+    ;; remove until fit
+    ;; main logic starts here
+    (dolist (info info-list)
+      (unless (ifrich--is-candidate info)
+        (let* ((value-list (alist-get 'value info))
+               (info-max-len (floor (* ifrich-max-length (alist-get 'prop info)))))
+          ;; try next value until fit or only one value left
+          (while (and (< info-max-len (length (car value-list)))
+                      (< 1 (length value-list)))
+            (pop (alist-get 'value info)) ; info-list wouldn't change if pop value-list
+            (pop value-list)) ; pop value-list to examine next value
+          ;; only one left but still doesn't fit
+          (when (< info-max-len (length (car value-list)))
+            (push (substring (pop (alist-get 'value info)) 0 (1- info-max-len))
+                  (alist-get 'value info-list))))))
+    info-list))
+
 (defun ifrich--format-to-sequence (info-list)
   "Turn a format (INFO-LIST) into a sequence of strings.
 The first step replaced the functions in format with a list of possible strings.
@@ -210,17 +245,17 @@ This function colorize the string and add paddings.
 Then all the fourth function to join that sequence into one string and return that.
 
 The sequence is a list of colorized strings and paddings
-For example, (left-pad candidate right-pad left-pad value-1 right-pad)
-(\"\" \"candddddddddidate\" \"      \" \"\" \"value 1\" \"       \")
+For example, \(left-pad candidate right-pad left-pad value-1 right-pad\)
+\(\"\" \"candddddddddidate\" \"      \" \"\" \"value 1\" \"       \"\)
 Note that all strings have properties
 
-Return (entry-sequence candidate-index candidate-planned-len)
-"
+Return \(entry-sequence candidate-index candidate-planned-len\)."
   (let ((candidate-planned-len 0)
         (candidate-index 0)
         (index 0)
         (entry-sequence ()))
     (dolist (info info-list)
+      (print info)
       (let* ((value (car (alist-get 'value info)))
              (max-info-len (floor (* ifrich-max-length (alist-get 'prop info))))
              ;; if value is shorter than max-info-length,
@@ -318,40 +353,6 @@ cannnnnnnnnnnnnnd             part2"
       t
     nil))
 
-(defun ifrich--trim-entry-to-max-length (info-list)
-"Try to fit each info into its max-length and return the final INFO-LIST.
-Each info's max length is calculated by `ifrich-max-length' x info proportion (prop).
-
-Each info is an alist with key: value, prop, etc.
-
-The function tries the first value (the longest) of info's value list,
-if that doesn't fit, the funtion removes it and tries the formal second, now first
-value in the value list. And this goes on.
-
-If there is only one value left in the value list and it doesn't fit,
-the function trims it from its tail and fit it to the max length.
-
-In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
-  (if (<= ifrich-max-length 0)
-      (progn
-        (warn "ifrich-max-length has to be greater than 0! Current value is %s" ifrich-max-length)
-        nil)
-    ;; remove until fit
-    ;; main logic starts here
-    (dolist (info info-list)
-      (unless (ifrich--is-candidate info)
-        (let* ((value-list (alist-get 'value info))
-               (info-max-len (floor (* ifrich-max-length (alist-get 'prop info)))))
-          ;; try next value until fit or only one value left
-          (while (and (< info-max-len (length (car value-list)))
-                      (< 1 (length value-list)))
-            (pop (alist-get 'value info)) ; info-list wouldn't change if pop value-list
-            (pop value-list)) ; pop value-list to examine next value
-          ;; only one left but still doesn't fit
-          (when (< info-max-len (length (car value-list)))
-            (push (substring (pop (alist-get 'value info)) 0 (1- info-max-len))
-                  (alist-get 'value info-list))))))
-    info-list))
 
 
 ;;
