@@ -234,7 +234,7 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
           ;; only one left but still doesn't fit
           (when (< info-max-len (length (car value-list)))
             (push (substring (pop (alist-get 'value info)) 0 (1- info-max-len))
-                  (alist-get 'value info-list))))))
+                  (alist-get 'value info))))))
     info-list))
 
 (defun ifrich--format-to-sequence (info-list)
