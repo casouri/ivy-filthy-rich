@@ -125,8 +125,8 @@ Format rule in info (C-h i).")
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
   (let ((doc (documentation (intern candidate))))
-    (if (and doc (string-match "^.+?\\." doc))
-        (list (match-string 0 doc))
+    (if (and doc (string-match "\\(^.+?\\.\\)\n" doc))
+        (list (match-string 1 doc))
       '(""))))
 
 (defun ifrich--get-doc-property (candidate)
