@@ -143,8 +143,8 @@ Format rule in info (C-h i).")
         (progn
           (string-match "^.+?\\." demo)
           (setq demo (match-string 0 demo)))
-      (setq demo "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!")
-      (list (propertize 0 (length demo) 'face (intern candidate) demo)))))
+      (setq demo "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!"))
+    (list (propertize demo 'face (intern candidate)))))
 
 ;;
 ;; Deploy function
