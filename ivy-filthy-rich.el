@@ -224,8 +224,8 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
     ;; main logic starts here
     (dolist (info info-list)
       (unless (ifrich--is-candidate info)
-        (let* ((value-list (alist-get 'value info))
-               (info-max-len (floor (* ifrich-max-length (alist-get 'prop info)))))
+        (let ((value-list (alist-get 'value info))
+              (info-max-len (floor (* (alist-get 'prop info) ifrich-max-length))))
           ;; try next value until fit or only one value left
           (while (and (< info-max-len (length (car value-list)))
                       (< 1 (length value-list)))
@@ -255,7 +255,6 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
         (index 0)
         (entry-sequence ()))
     (dolist (info info-list)
-      (print info)
       (let* ((value (car (alist-get 'value info)))
              (max-info-len (floor (* ifrich-max-length (alist-get 'prop info))))
              ;; if value is shorter than max-info-length,
@@ -273,7 +272,7 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
         ;; coloring
         (let ((face-spec (alist-get 'face info)))
           (when face-spec
-            (put-text-property 0 (length value) 'face face-spec value)))
+            (setq value (propertize value 'face face-spec))))
         ;; padding
         (setq value-with-pad
               (list left-pad value right-pad))
