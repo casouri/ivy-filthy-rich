@@ -309,7 +309,10 @@ cannnnnnnnnnnnnnd             part2"
          (seq (copy-tree seq)))
     ;; 1. make sure candidate has enought space
     (when (equal 0 candidate-pad-length)
-      (while (> candidate-len candidate-planned-length)
+      (while (and (> candidate-len candidate-planned-length)
+                  ;; if next part have zero length, loop will run forever
+                  ;; because candidate-planned-length can never grow
+                  (not (eq 0 (length (nth index-after-candidate seq)))))
       ;; give the space of the element right after candidate to candidate
       (setq candidate-planned-length
             (+ candidate-planned-length
@@ -320,10 +323,16 @@ cannnnnnnnnnnnnnd             part2"
     (ifrich--set-nth candidate-real-index seq
                      (concat candidate
                              (make-string
-                              (- candidate-planned-length candidate-len)
+                              (ifrich--zero-if-negative (- candidate-planned-length candidate-len))
                               ifrich-padding))))
     ;; 2.2 concat everything
     (apply 'concat seq)))
+
+(defun ifrich--zero-if-negative (num)
+  "If NUM < 0, return 0, else return NUM."
+  (if (< num 0)
+      0
+    num))
 
 (defun ifrich--delete-nth (index seq)
   "Delete the INDEX th element of SEQ."
