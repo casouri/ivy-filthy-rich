@@ -132,8 +132,8 @@ Format rule in info (C-h i).")
 (defun ifrich--get-doc-property (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
   (let ((doc (documentation-property (intern candidate) 'variable-documentation)))
-    (if (and doc (string-match "^.+?\\." doc))
-        (list (match-string 0 doc))
+    (if (and doc (string-match "\\(^.+?\\.\\)\n" doc))
+        (list (match-string 1 doc))
       '(""))))
 
 (defun ifrich--get-face (candidate)
@@ -141,8 +141,8 @@ Format rule in info (C-h i).")
   (let ((demo (face-documentation (intern candidate))))
     (if demo
         (progn
-          (string-match "^.+?\\." demo)
-          (setq demo (match-string 0 demo)))
+          (string-match "\\(^.+?\\.\\)\n" demo)
+          (setq demo (match-string 1 demo)))
       (setq demo "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!"))
     (list (propertize demo 'face (intern candidate)))))
 
