@@ -117,10 +117,11 @@ Format rule in info (C-h i).")
 (defun ifrich--get-dir (candidate)
   "Return directory of buffer (CANDIDATE)."
   (let* ((buffer (get-buffer candidate))
-        (dir (when buffer
-                 (buffer-local-value 'default-directory buffer))))
-    (when buffer (list dir
-          (file-name-nondirectory (directory-file-name dir))))))
+         (dir (when buffer
+                (buffer-local-value 'default-directory buffer))))
+    (when buffer
+      (list dir
+            (file-name-nondirectory (directory-file-name dir))))))
 
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
