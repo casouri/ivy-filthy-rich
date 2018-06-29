@@ -125,17 +125,17 @@ Format rule in info (C-h i).")
 
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
-  (let ((doc (documentation (intern candidate))))
+  (let ((doc (or (documentation (intern candidate)) "")))
     (list (or (ifrich--get-doc-summary doc) ""))))
 
 (defun ifrich--get-doc-property (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
-  (let ((doc (documentation-property (intern candidate) 'variable-documentation)))
+  (let ((doc (or (documentation-property (intern candidate) 'variable-documentation) "")))
     (list (or (ifrich--get-doc-summary doc) ""))))
 
 (defun ifrich--get-face (candidate)
   "Return a test string with face CANDIDATE applied."
-  (let* ((doc (face-documentation (intern candidate)))
+  (let* ((doc (or (face-documentation (intern candidate) "")))
          (demo (or (ifrich--get-doc-summary doc)
                    "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!")))
     (list (propertize demo 'face (intern candidate)))))
