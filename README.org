@@ -28,13 +28,13 @@ The package is not in melpa, so you need to download and load it yourself.
   
 ** Out of the box
    
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 (ivy-filthy-rich-mode)
 #+END_SRC
 
 ** Simple customizations
 
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 (defcustom ifrich-padding ?\s
   "The padding of `ifrich-delimiter'.
 It is used when there are extra space.
@@ -71,14 +71,14 @@ An info function is a function which you pass in a candidate
 and it returns some extra information about the candidate.
 
 You can checkout default ones under
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 ;;
 ;; Info Function (Return info string list, used in format)
 ;;
 #+END_SRC
 
 For example:
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 (defun ifrich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
   (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
@@ -93,14 +93,14 @@ Actually, it returns a list, rather than a string. The reason is explained below
 Now you need to declare a format for a particular ivy-function.
 
 Default ones are under
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 ;;
 ;; Default formaat
 ;;
 #+END_SRC
 
 For example,
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 (defvar ifrich-default-switch-buffer-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
     ((value . ifrich--get-major-mode)                (prop . 0.2) (face . (:foreground "#61AFEF")))
@@ -133,7 +133,7 @@ Avaliable keys for alists are:
 
 *** 2. deploy your format
     
-#+BEGIN_SRC lisp
+#+BEGIN_SRC emacs-lisp
 (ivy-set-display-transformer 'ivy-function-you-want-to-modify (lambda (candidate) (ifrich--format-candidate candidate your-customized-format)))
 #+END_SRC
 
