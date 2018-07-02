@@ -135,7 +135,7 @@ Format rule in info (C-h i).")
 
 (defun ifrich--get-face (candidate)
   "Return a test string with face CANDIDATE applied."
-  (let* ((doc (or (face-documentation (intern candidate) "")))
+  (let* ((doc (or (face-documentation (intern candidate)) ""))
          (demo (or (ifrich--get-doc-summary doc)
                    "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!")))
     (list (propertize demo 'face (intern candidate)))))
