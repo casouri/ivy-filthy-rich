@@ -193,6 +193,8 @@ Format rule in info (C-h i).")
         (format (copy-tree format))
         (ifrich-max-length (when (equal 0 ifrich-max-length)
                              (1- (frame-width)))))
+    (when (sequencep candidate)
+      (setq candidate (substring-no-properties candidate)))
     (dolist (format-element format)
       (let ((func (alist-get 'value format-element)))
         ;; evaluate the function and replace it with returned value list
@@ -322,11 +324,12 @@ cannnnnnnnnnnnnnd             part2"
         (setq seq (ifrich--delete-nth index-after-candidate seq)))
     ;; 2. concat everything together
     ;; 2.1 pad candidate to have length of candidate-planned-length
-    (ifrich--set-nth candidate-real-index seq
-                     (concat candidate
-                             (make-string
-                              (ifrich--zero-if-negative (- candidate-planned-length candidate-len))
-                              ifrich-padding))))
+      (print seq)
+      (ifrich--set-nth candidate-real-index seq
+                       (concat candidate
+                               (make-string
+                                (ifrich--zero-if-negative (- candidate-planned-length candidate-len))
+                                ifrich-padding))))
     ;; 2.2 concat everything
     (apply 'concat seq)))
 
@@ -338,7 +341,8 @@ cannnnnnnnnnnnnnd             part2"
 
 (defun ifrich--delete-nth (index seq)
   "Delete the INDEX th element of SEQ."
-  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq)))
+  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq))
+  seq)
 
 (defun ifrich--set-nth (index seq newval)
   "Set the INDEX th element of SEQ to NEWVAL."
