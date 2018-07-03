@@ -314,15 +314,12 @@ cannnnnnnnnnnnnnd             part2"
          (seq (copy-tree seq)))
     ;; 1. make sure candidate has enought space
     (when (equal 0 candidate-pad-length)
-      (while (and (> candidate-len candidate-planned-length)
-                  ;; if next part have zero length, loop will run forever
-                  ;; because candidate-planned-length can never grow
-                  (not (eq 0 (length (nth index-after-candidate seq)))))
-      ;; give the space of the element right after candidate to candidate
-      (setq candidate-planned-length
-            (+ candidate-planned-length
-               (length (nth index-after-candidate seq))))
-      (ifrich--delete-nth index-after-candidate seq))
+      (while (> candidate-len candidate-planned-length)
+        ;; give the space of the element right after candidate to candidate
+        (setq candidate-planned-length
+              (+ candidate-planned-length
+                 (length (nth index-after-candidate seq))))
+        (setq seq (ifrich--delete-nth index-after-candidate seq)))
     ;; 2. concat everything together
     ;; 2.1 pad candidate to have length of candidate-planned-length
     (ifrich--set-nth candidate-real-index seq
