@@ -324,7 +324,6 @@ cannnnnnnnnnnnnnd             part2"
         (setq seq (ifrich--delete-nth index-after-candidate seq)))
     ;; 2. concat everything together
     ;; 2.1 pad candidate to have length of candidate-planned-length
-      (print seq)
       (ifrich--set-nth candidate-real-index seq
                        (concat candidate
                                (make-string
