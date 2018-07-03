@@ -110,8 +110,9 @@ Format rule in info (C-h i).")
 (defun ifrich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
   (let ((buffer (get-buffer candidate)))
-    (when buffer
-      (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer)))))))
+    (if buffer
+        (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer))))
+      '(""))))
 
 
 (defun ifrich--get-dir (candidate)
@@ -119,9 +120,10 @@ Format rule in info (C-h i).")
   (let* ((buffer (get-buffer candidate))
          (dir (when buffer
                 (buffer-local-value 'default-directory buffer))))
-    (when buffer
+    (if buffer
       (list dir
-            (file-name-nondirectory (directory-file-name dir))))))
+            (file-name-nondirectory (directory-file-name dir)))
+      '(""))))
 
 (defun ifrich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
@@ -257,6 +259,7 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
         (index 0)
         (entry-sequence ()))
     (dolist (info info-list)
+      ;; (print info-list)
       (let* ((value (car (alist-get 'value info)))
              (max-info-len (floor (* ifrich-max-length (alist-get 'prop info))))
              ;; if value is shorter than max-info-length,
@@ -363,95 +366,6 @@ cannnnnnnnnnnnnnd             part2"
       t
     nil))
 
-
-
-;;
-;; Test
-;;
-
-;; Don't use these tests, they are a mess
-
-(defun ifrich-run-test ()
-  "Run test."
-  ;; (ifrich--calculate-entry-length-test)
-  ;; (ifrich--trim-entry-to-max-length-test)
-  (ifrich--format-candidate-test)
-  (ifrich--format-to-sequence-test)
-  (ifrich--concat-entry-sequence-test))
-
-(defun ifrich--calculate-entry-length-test ()
-  "Test."
-  (let ((entry '(((value . ("1234"))) ((value . ("1234"))) ((value . ("1234")))))
-        (ifrich-delimiter "1"))
-    (if (equal (ifrich--calculate-entry-length entry) 14)
-        (message "pass")
-      (message "ifrich-calculate-entry-length-test failed."))))
-
-(defun ifrich--trim-entry-to-max-length-test ()
-  "Test."
-  (let ((ifrich-max-length 6)
-        ;; FIXME
-        (entry '(((value . ("1234"))) ((value . ("1234"))) ((value . ("1234"))))))
-    (if (equal '(((value . ("1234")))) (ifrich--trim-entry-to-max-length entry))
-        (message "pass")
-      (message "ifrich-trim-entry-to-max-length-test 1 failed.")))
-  (let ((ifrich-max-length -1)
-        (entry '(((value . ("1234"))) ((value . ("1234"))) ((value . ("1234")))))
-        (warning-minimum-level :emergency))
-    (if (equal nil (ifrich--trim-entry-to-max-length entry))
-        (message "pass")
-      (message "ifrich-trim-entry-to-max-length-test 2 failed."))))
-  
-(defun ifrich--format-candidate-test ()
-  "Test."
-  (let ((format '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
-                 ((value . (lambda (candidate) '("looooooooong2" "short"))) (prop . 0.4) (face . ((t (:foreground "red")))))
-                 ((value . (lambda (candidate) '("looooooooooong3" "short one"))) (prop . 0.4) (face . ((t (:foreground "green")))))))
-        (ifrich-padding ?\s)
-        (ifrich-max-length 150)
-        (expected1 "canddddddddddddddddddddddddddddddddddddddddddddddddddddddddd                              looooooooooong3                                             ")
-        (candidate1 "canddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"))
-    (setq sss (ifrich--format-candidate candidate1 format))
-    ;; (if (equal (substring-no-properties (ifrich--format-candidate candidate1 format)) expected1)
-    ;;     (message "pass")
-    ;;   (message "ifrich--format-candidate-test 1 failed."))
-    ))
-
-(defun ifrich--format-to-sequence-test ()
-  "Test."
-  (let ((info-list '(((value . ("canddddddddddddd")) (prop . 0.2) (candidate . t))
-                     ((value . ("value1")) (prop . 0.4) (face . ((t (:foreground "red")))))
-                     ((value . ("value2")) (prop . 0.4) (face . ((t (:foreground "green")))))))
-        (ifrich-padding ?\s)
-        (ifrich-max-length 150)
-        (expected '(("" #("canddddddddddddd" 0 16 (face nil)) "              " "" #("value1" 0 6 (face ((t (:foreground "red"))))) "                                                      " "" #("value2" 0 6 (face ((t (:foreground "green"))))) "                                                      ")
-                    0 30)))
-    ;; (print (ifrich--format-to-sequence info-list))
-    (if (equal (ifrich--format-to-sequence info-list) expected)
-        (message "pass")
-      (message "ifrich--format-to-sequence-test 1 failed."))))
-
-(defun ifrich--concat-entry-sequence-test ()
-  "Test.
-original:
-planned-cand-len:
-|<--- plan -->|   (15)
-               [value1]         [value2]         |
-actual cand:
-[cannnnnnnnnnnnnnnd]
-
-result:
-|<---- new plan ----->|
-[cannnnnnnnnnnnnnnd]            [value2]         |
-"
-  (let ((ifrich-max-length 40)
-        (seq '("" "[cannnnnnnnnnnnnnnd]" "" "" "[value1]" "         " "" "[value2]" "         ")))
-    ;; (print (ifrich--concat-entry-sequence seq 0 15))
-    ;; (print "[cannnnnnnnnnnnnnnd]            [value2]         ")
-    ;; (print seq)
-    (if (equal (ifrich--concat-entry-sequence seq 0 15) "[cannnnnnnnnnnnnnnd]            [value2]         ")
-        "pass"
-      "ifrich--concat-entry-sequence-test 1 failed.")))
 
 
 (provide 'ivy-filthy-rich)
