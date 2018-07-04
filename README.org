@@ -75,7 +75,7 @@ and it returns some extra information about the candidate.
 You can checkout default ones under
 #+BEGIN_SRC emacs-lisp
 ;;
-;; Info Function (Return info string list, used in format)
+;;; Info Function (Return info string list, used in format)
 ;;
 #+END_SRC
 
@@ -97,7 +97,7 @@ Now you need to declare a format for a particular ivy-function.
 Default ones are under
 #+BEGIN_SRC emacs-lisp
 ;;
-;; Default formaat
+;;; Default formaat
 ;;
 #+END_SRC
 
