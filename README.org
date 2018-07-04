@@ -20,6 +20,8 @@ Inspired by [[https://github.com/Yevgnen/ivy-rich][ivy-rich]].
 
 [[./function.png]]
 
+[[./face.png]]
+
 * Install
 
 The package is not in melpa, so you need to download and load it yourself.
