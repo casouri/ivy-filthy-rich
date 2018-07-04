@@ -67,6 +67,19 @@ If it is zero, the max-length is (1- (frame-width))"
   :type 'symbol
   :group 'ivy-filthy-rich)
 
+(defvar ifrich-transformer-alist
+  '(('ivy-switch-buffer          . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
+    ('counsel-describe-function  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
+    ('counsel-describe-variable  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
+    ('counsel-M-x                . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
+    ('counsel-describe-face      . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
+    )
+  "An alist of all the to-be-transformed ivy functions and their corresponding transformers.
+\(\(function . transformer)\\)")
+
+
+(defvar ifrich--ivy-original-transformer-plist ivy--display-transformers-list)
+
 ;;
 ;;; Default format
 ;;
@@ -118,6 +131,7 @@ Format rule in info (C-h i).")
     ((value . ifrich--get-face) (prop . 0.7)))
   "The default format for `counsel-faces'.
 Format rule in info (C-h i).")
+
 
 ;;
 ;;; Info Function (Return info string list, used in format)
@@ -185,18 +199,29 @@ Format rule in info (C-h i).")
   :global t
   :require 'ivy-filthy-rich
   (if ivy-filthy-rich-mode
-      (progn
-        (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
-        (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
-        (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
-        (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-        (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format))))
-    (ivy-set-display-transformer 'ivy-switch-buffer          nil)
-    (ivy-set-display-transformer 'counsel-describe-function  nil)
-    (ivy-set-display-transformer 'counsel-describe-variable  nil)
-    (ivy-set-display-transformer 'counsel-M-x                nil)
-    (ivy-set-display-transformer 'counsel-describe-face      nil)
-    ))
+      (ifrich--deploy-transformer)
+    (ifrich--cleanup-transformer)))
+
+(defun ifrich--deploy-transformer ()
+  "Deploy transformers."
+  (dolist (pair ifrich-transformer-alist)
+    (let* ((func (car pair))
+           (transformer (cdr pair))
+           (original-transformer (plist-get ivy--display-transformers-list func)))
+      ;; backup original transformer
+      (when original-transformer (plist-put ifrich--ivy-original-transformer-plist func original-transformer))
+      (ivy-set-display-transformer func transformer))))
+
+(defun ifrich--cleanup-transformer ()
+  "Remove ifirch transformers."
+  (dolist (pair ifrich-transformer-alist)
+    (let* ((func (car pair))
+           (transformer (cdr pair))
+           (current-transformer (plist-get ivy--display-transformers-list func))
+           (original-transformer (plist-get ifrich--ivy-original-transformer-plist func)))
+      ;; if no other people changes the transformer, set it back to original transformer
+      ;; if other people changed it after us, don't do anything
+      (unless (eq current-transformer func) (plist-put ivy--display-transformers-list func original-transformer)))))
 
 ;;
 ;;; Logic Function
