@@ -30,7 +30,7 @@
 ;;; Code:
 
 ;;
-;; Variabale & Customize
+;;; Variabale & Customize
 
 (defgroup ivy-filthy-rich nil
   "Customizations of ivy-filthy-rich"
@@ -68,26 +68,42 @@ If it is zero, the max-length is (1- (frame-width))"
   :group 'ivy-filthy-rich)
 
 ;;
-;; Default formaat
+;;; Default format
 ;;
+
+;;;; Ivy default transformers
+
+;; counsel-find-file ivy-read-file-transformer
+;; read-file-name-internal ivy-read-file-transformer
+;; ivy-switch-buffer ivy-switch-buffer-transformer
+;; internal-complete-buffer ivy-switch-buffer-transformer
+;; counsel-describe-variable counsel-describe-variable-transformer
+;; counsel-describe-function counsel-describe-function-transformer
+;; counsel-M-x counsel-M-x-transformer
+;; counsel-git-grep counsel-git-grep-transformer
+;; counsel-ag counsel-git-grep-transformer
+;; counsel-rg counsel-git-grep-transformer
+
 
 ;; the value function needs to return a list of possible values, sorted from longest to shortest
 ;; candiate info has to have a key 'candidate equal to t
 
 (defvar ifrich-default-switch-buffer-format
-  '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
+  '(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
     ((value . ifrich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
     ((value . ifrich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
   "The default format for `ivy-switch-buffer'.
 Format rule in info (C-h i).")
 
 (defvar ifrich-default-describe-function-format
-  '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
+  '(((value . (lambda (candidate) (list (counsel-describe-function-transformer candidate)))) (prop . 0.3) (candidate . t))
     ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-describe-function'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-M-x-format ifrich-default-describe-function-format
+(defvar ifrich-default-M-x-format 
+  '(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
+    ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-M-x'.
 Format rule in info (C-h i).")
 
@@ -104,7 +120,7 @@ Format rule in info (C-h i).")
 Format rule in info (C-h i).")
 
 ;;
-;; Info Function (Return info string list, used in format)
+;;; Info Function (Return info string list, used in format)
 ;;
 
 (defun ifrich--get-major-mode (candidate)
@@ -151,7 +167,7 @@ Format rule in info (C-h i).")
       nil)))
 
 ;;
-;; Deploy function
+;;; Deploy function
 ;;
 
 (defun ifrich-set-function ()
@@ -182,7 +198,7 @@ Format rule in info (C-h i).")
     ))
 
 ;;
-;; Logic Function
+;;; Logic Function
 ;;
 
 (defun ifrich--format-candidate (candidate format)
@@ -331,6 +347,9 @@ cannnnnnnnnnnnnnd             part2"
                                 ifrich-padding))))
     ;; 2.2 concat everything
     (apply 'concat seq)))
+
+;;
+;;;; Helper functions
 
 (defun ifrich--zero-if-negative (num)
   "If NUM < 0, return 0, else return NUM."
