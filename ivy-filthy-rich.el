@@ -183,6 +183,7 @@ Format rule in info (C-h i).")
   "A global minor mode that adds information to ivy candidates. I'm F****** Rich."
   :lighter "IFRich"
   :global t
+  :require 'ivy-filthy-rich
   (if ivy-filthy-rich-mode
       (progn
         (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
