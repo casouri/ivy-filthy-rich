@@ -135,8 +135,13 @@ Avaliable keys for alists are:
 
 *** 2. deploy your format
     
+Make your tranformer by =lambda= and add it to =ifrich-transformer-alist=.
+Restart =ivy-filthy-rich-mode= if its already on.
+    
 #+BEGIN_SRC emacs-lisp
-(ivy-set-display-transformer 'ivy-function-you-want-to-modify (lambda (candidate) (ifrich--format-candidate candidate your-customized-format)))
+(add-to-list 'ifrich-transformer-alist '(ivy-function-you-want-to-modify . (lambda (candidate) (ifrich--format-candidate candidate your-customized-format))))
 #+END_SRC
 
-Simple, =ifrich--format-candidate= takes a candidate string and a format, and returns the modified string.
+P.S.
+
+=ifrich--format-candidate= takes a candidate string and a format, and returns the modified string.
