@@ -85,8 +85,8 @@ For example:
   "Return major mode of buffer (CANDIDATE)."
   (let ((buffer (get-buffer candidate)))
     (if buffer
-        (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer))))
-      '(""))))
+        (list (symbol-name (buffer-local-value 'major-mode buffer))))
+      '("")))
 #+END_SRC
 
 This function returns the major mode in which the candidate is.
