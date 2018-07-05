@@ -37,8 +37,8 @@ The package is not in melpa, so you need to download and load it yourself.
 ** Simple customizations
 
 #+BEGIN_SRC emacs-lisp
-(defcustom ifrich-padding ?\s
-  "The padding of `ifrich-delimiter'.
+(defcustom ivy-filthy-rich-padding ?\s
+  "The padding of `ivy-filthy-rich-delimiter'.
 It is used when there are extra space.
 The length of the pad has to be one.
 If not, `ivy-filth-rich' will fallback to using space to pad.
@@ -47,7 +47,7 @@ Currently only support character, because `make-string' only accept that."
   :type 'character
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-pad-side 'right
+(defcustom ivy-filthy-rich-pad-side 'right
   "The side which padding is pad to.
 Either left or right.
 
@@ -56,7 +56,7 @@ right means align left."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-max-length 0
+(defcustom ivy-filthy-rich-max-length 0
   "The max length of one entry (one line on ivy buffer).
 If it is zero, the max-length is (1- (frame-width))"
   :type 'number
@@ -81,7 +81,7 @@ You can checkout default ones under
 
 For example:
 #+BEGIN_SRC emacs-lisp
-(defun ifrich--get-major-mode (candidate)
+(defun ivy-filthy-rich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
   (let ((buffer (get-buffer candidate)))
     (if buffer
@@ -108,10 +108,10 @@ Default ones are under
 
 For example,
 #+BEGIN_SRC emacs-lisp
-(defvar ifrich-default-switch-buffer-format
+(defvar ivy-filthy-rich-default-switch-buffer-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.2) (candidate . t))
-    ((value . ifrich--get-major-mode)                (prop . 0.2) (face . (:foreground "#61AFEF")))
-    ((value . ifrich--get-dir)                       (prop . 0.6) (face . (:foreground "#98C379"))))
+    ((value . ivy-filthy-rich--get-major-mode)                (prop . 0.2) (face . (:foreground "#61AFEF")))
+    ((value . ivy-filthy-rich--get-dir)                       (prop . 0.6) (face . (:foreground "#98C379"))))
   "The default format for `ivy-switch-buffer'.
 Format rule in info (C-h i).")
 #+END_SRC
@@ -136,7 +136,7 @@ Avaliable keys for alists are:
            A complete list can be found in source code under
            =;;;; Ivy default transformers=
            
-- prop :: the length that the info can occupy. It is a fraction against =ifrich-max-length=.
+- prop :: the length that the info can occupy. It is a fraction against =ivy-filthy-rich-max-length=.
           =0.3= means the piece of info will get 30% of the max length.
           All the props don't have to add up to 1, though.
           For candidates, you can just assign a average number because
@@ -151,13 +151,13 @@ Avaliable keys for alists are:
 
 *** 2. deploy your format
     
-Make your tranformer by =lambda= and add it to =ifrich-transformer-alist=.
+Make your tranformer by =lambda= and add it to =ivy-filthy-rich-transformer-alist=.
 Restart =ivy-filthy-rich-mode= if its already on.
     
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'ifrich-transformer-alist '(ivy-function-you-want-to-modify . (lambda (candidate) (ifrich--format-candidate candidate your-customized-format))))
+(add-to-list 'ivy-filthy-rich-transformer-alist '(ivy-function-you-want-to-modify . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate your-customized-format))))
 #+END_SRC
 
 P.S.
 
-=ifrich--format-candidate= takes a candidate string and a format, and returns the modified string.
+=ivy-filthy-rich--format-candidate= takes a candidate string and a format, and returns the modified string.
