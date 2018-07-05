@@ -184,15 +184,6 @@ Format rule in info (C-h i).")
 ;;; Deploy function
 ;;
 
-(defun ifrich-set-function ()
-  "Set transform functions."
-  (ivy-set-display-transformer 'ivy-switch-buffer          (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
-  (ivy-set-display-transformer 'counsel-describe-function  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
-  (ivy-set-display-transformer 'counsel-describe-variable  (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
-  (ivy-set-display-transformer 'counsel-M-x                (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-  (ivy-set-display-transformer 'counsel-describe-face      (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
-  )
-
 (define-minor-mode ivy-filthy-rich-mode
   "A global minor mode that adds information to ivy candidates. I'm F****** Rich."
   :lighter "IFRich"
