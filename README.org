@@ -161,3 +161,7 @@ Restart =ivy-filthy-rich-mode= if its already on.
 P.S.
 
 =ivy-filthy-rich--format-candidate= takes a candidate string and a format, and returns the modified string.
+
+* Credits
+- @Yevgnen for ivy-rich
+- @seagle0128 for finding a bunch of bugs
