@@ -141,7 +141,7 @@ Format rule in info (C-h i).")
   "Return major mode of buffer (CANDIDATE)."
   (let ((buffer (get-buffer candidate)))
     (if buffer
-        (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer))))
+        (list (symbol-name (buffer-local-value 'major-mode buffer)) 'face '(t (:background "white")))
       '(""))))
 
 
