@@ -133,6 +133,7 @@ Avaliable keys for alists are:
            
            Some ivy/counsel functions have default transformers,
            you might want to include them into your custom format.
+           (like what I did in the example)
            A complete list can be found in source code under
            =;;;; Ivy default transformers=
            
