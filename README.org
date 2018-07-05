@@ -159,8 +159,6 @@ Restart =ivy-filthy-rich-mode= if its already on.
 (add-to-list 'ivy-filthy-rich-transformer-alist '(ivy-function-you-want-to-modify . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate your-customized-format))))
 #+END_SRC
 
-P.S.
-
 =ivy-filthy-rich--format-candidate= takes a candidate string and a format, and returns the modified string.
 
 * Credits
