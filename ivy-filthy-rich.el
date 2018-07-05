@@ -19,7 +19,7 @@
 ;; URL: https://github.com/casouri/ivy-filthy-rich
 ;; Version: 0.0.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "25") (ivy "0.8.0"))
+;; Package-Requires: ((emacs "25") (ivy "0.8.0") (counsel "0.8.0"))
 
 ;;; Commentary:
 ;;  To enable this package, run
@@ -29,16 +29,19 @@
 
 ;;; Code:
 
+(require 'counsel)
+(require 'ivy)
+
 ;;
 ;;; Variabale & Customize
 
 (defgroup ivy-filthy-rich nil
   "Customizations of ivy-filthy-rich"
-  :prefix "ifrich-"
+  :prefix "ivy-filthy-rich-"
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-padding ?\s
-  "The padding of `ifrich-delimiter'.
+(defcustom ivy-filthy-rich-padding ?\s
+  "The padding of `ivy-filthy-rich-delimiter'.
 It is used when there are extra space.
 The length of the pad has to be one.
 If not, `ivy-filth-rich' will fallback to using space to pad.
@@ -47,7 +50,7 @@ Currently only support character, because `make-string' only accept that."
   :type 'character
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-pad-side 'right
+(defcustom ivy-filthy-rich-pad-side 'right
   "The side which padding is pad to.
 Either left or right.
 
@@ -56,29 +59,29 @@ right means align left."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-max-length 0
+(defcustom ivy-filthy-rich-max-length 0
   "The max length of one entry (one line on ivy buffer).
 If it is zero, the max-length is (1- (frame-width))"
   :type 'number
   :group 'ivy-filthy-rich)
 
-(defcustom ifrich-format-func 'ifrich-format-candidate
+(defcustom ivy-filthy-rich-format-func 'ivy-filthy-rich-format-candidate
   "The function that returns the final riched ivy candidate."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
-(defvar ifrich-transformer-alist
-  '((ivy-switch-buffer          . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
-    (counsel-describe-function  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
-    (counsel-describe-variable  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
-    (counsel-M-x                . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-    (counsel-describe-face      . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
+(defvar ivy-filthy-rich-transformer-alist
+  '((ivy-switch-buffer          . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-switch-buffer-format)))
+    (counsel-describe-function  . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-describe-function-format)))
+    (counsel-describe-variable  . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-describe-variable-format)))
+    (counsel-M-x                . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-M-x-format)))
+    (counsel-describe-face      . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-describe-face-format)))
     )
   "An alist of all the to-be-transformed ivy functions and their corresponding transformers.
 \(\(function . transformer)\\)")
 
 
-(defvar ifrich--ivy-original-transformer-plist ivy--display-transformers-list)
+(defvar ivy-filthy-rich--ivy-original-transformer-plist ivy--display-transformers-list)
 
 ;;
 ;;; Default format
@@ -101,34 +104,34 @@ If it is zero, the max-length is (1- (frame-width))"
 ;; the value function needs to return a list of possible values, sorted from longest to shortest
 ;; candiate info has to have a key 'candidate equal to t
 
-(defvar ifrich-default-switch-buffer-format
+(defvar ivy-filthy-rich-default-switch-buffer-format
   '(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
-    ((value . ifrich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
-    ((value . ifrich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
+    ((value . ivy-filthy-rich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
+    ((value . ivy-filthy-rich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
   "The default format for `ivy-switch-buffer'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-describe-function-format
+(defvar ivy-filthy-rich-default-describe-function-format
   '(((value . (lambda (candidate) (list (counsel-describe-function-transformer candidate)))) (prop . 0.3) (candidate . t))
-    ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-describe-function'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-M-x-format 
+(defvar ivy-filthy-rich-default-M-x-format 
   '(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
-    ((value . ifrich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-M-x'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-describe-variable-format
+(defvar ivy-filthy-rich-default-describe-variable-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
-    ((value . ifrich--get-doc-property) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+    ((value . ivy-filthy-rich--get-doc-property) (prop . 0.6) (face . (:foreground "#61AFEF"))))
   "The default format for `counsel-describe-variable'.
 Format rule in info (C-h i).")
 
-(defvar ifrich-default-describe-face-format
+(defvar ivy-filthy-rich-default-describe-face-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
-    ((value . ifrich--get-face) (prop . 0.7)))
+    ((value . ivy-filthy-rich--get-face) (prop . 0.7)))
   "The default format for `counsel-faces'.
 Format rule in info (C-h i).")
 
@@ -137,7 +140,7 @@ Format rule in info (C-h i).")
 ;;; Info Function (Return info string list, used in format)
 ;;
 
-(defun ifrich--get-major-mode (candidate)
+(defun ivy-filthy-rich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
   (let ((buffer (get-buffer candidate)))
     (if buffer
@@ -145,7 +148,7 @@ Format rule in info (C-h i).")
       '(""))))
 
 
-(defun ifrich--get-dir (candidate)
+(defun ivy-filthy-rich--get-dir (candidate)
   "Return directory of buffer (CANDIDATE)."
   (let* ((buffer (get-buffer candidate))
          (dir (when buffer
@@ -155,24 +158,24 @@ Format rule in info (C-h i).")
             (file-name-nondirectory (directory-file-name dir)))
       '(""))))
 
-(defun ifrich--get-doc (candidate)
+(defun ivy-filthy-rich--get-doc (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
   (let ((doc (or (documentation (intern candidate)) "")))
-    (list (or (ifrich--get-doc-summary doc) ""))))
+    (list (or (ivy-filthy-rich--get-doc-summary doc) ""))))
 
-(defun ifrich--get-doc-property (candidate)
+(defun ivy-filthy-rich--get-doc-property (candidate)
   "Return the first sentense of the documentation of CANDIDATE as a symbol."
   (let ((doc (or (documentation-property (intern candidate) 'variable-documentation) "")))
-    (list (or (ifrich--get-doc-summary doc) ""))))
+    (list (or (ivy-filthy-rich--get-doc-summary doc) ""))))
 
-(defun ifrich--get-face (candidate)
+(defun ivy-filthy-rich--get-face (candidate)
   "Return a test string with face CANDIDATE applied."
   (let* ((doc (or (face-documentation (intern candidate)) ""))
-         (demo (or (ifrich--get-doc-summary doc)
+         (demo (or (ivy-filthy-rich--get-doc-summary doc)
                    "I CAN'T GO ON LIKE THIS -- LOSING A BILLION DOLLARS A MINUTE! I'LL BE BROKE IN 600 YEARS!")))
     (list (propertize demo 'face (intern candidate)))))
 
-(defun ifrich--get-doc-summary (doc)
+(defun ivy-filthy-rich--get-doc-summary (doc)
   "Return the first sentence of DOC. return nil if not exist."
   (if (string-match "\\(^.+?\\.\\)\n" doc)
       (match-string 1 doc)
@@ -186,30 +189,30 @@ Format rule in info (C-h i).")
 
 (define-minor-mode ivy-filthy-rich-mode
   "A global minor mode that adds information to ivy candidates. I'm F****** Rich."
-  :lighter "IFRich"
+  :lighter "Ivy-Filthy-Rich"
   :global t
   :require 'ivy-filthy-rich
   (if ivy-filthy-rich-mode
-      (ifrich--deploy-transformer)
-    (ifrich--cleanup-transformer)))
+      (ivy-filthy-rich--deploy-transformer)
+    (ivy-filthy-rich--cleanup-transformer)))
 
-(defun ifrich--deploy-transformer ()
+(defun ivy-filthy-rich--deploy-transformer ()
   "Deploy transformers."
-  (dolist (pair ifrich-transformer-alist)
+  (dolist (pair ivy-filthy-rich-transformer-alist)
     (let* ((func (car pair))
            (transformer (cdr pair))
            (original-transformer (plist-get ivy--display-transformers-list func)))
       ;; backup original transformer
-      (when original-transformer (plist-put ifrich--ivy-original-transformer-plist func original-transformer))
+      (when original-transformer (plist-put ivy-filthy-rich--ivy-original-transformer-plist func original-transformer))
       (ivy-set-display-transformer func transformer))))
 
-(defun ifrich--cleanup-transformer ()
+(defun ivy-filthy-rich--cleanup-transformer ()
   "Remove ifirch transformers."
-  (dolist (pair ifrich-transformer-alist)
+  (dolist (pair ivy-filthy-rich-transformer-alist)
     (let* ((func (car pair))
            (transformer (cdr pair))
            (current-transformer (plist-get ivy--display-transformers-list func))
-           (original-transformer (plist-get ifrich--ivy-original-transformer-plist func)))
+           (original-transformer (plist-get ivy-filthy-rich--ivy-original-transformer-plist func)))
       ;; if no other people changes the transformer, set it back to original transformer
       ;; if other people changed it after us, don't do anything
       (unless (eq current-transformer func) (plist-put ivy--display-transformers-list func original-transformer)))))
@@ -218,13 +221,13 @@ Format rule in info (C-h i).")
 ;;; Logic Function
 ;;
 
-(defun ifrich--format-candidate (candidate format)
+(defun ivy-filthy-rich--format-candidate (candidate format)
   "Format CANDIDATE into a rich candidate according to FORMAT."
   ;; 1. replace functions with actual info string
   (let ((info-list ())
         (entry-sequence ())
         (format (copy-tree format))
-        (ifrich-max-length (when (equal 0 ifrich-max-length)
+        (ivy-filthy-rich-max-length (when (equal 0 ivy-filthy-rich-max-length)
                              (1- (frame-width)))))
     (when (sequencep candidate)
       (setq candidate (substring-no-properties candidate)))
@@ -234,16 +237,16 @@ Format rule in info (C-h i).")
         (setf (alist-get 'value format-element) (funcall func candidate))
         ;; add the modified entry to new list
         (add-to-list 'info-list format-element t)))
-    ;; 2. trim each part(info) of entry to it's planned max length (* prop ifrich-max-length)
-    (setq info-list (ifrich--trim-entry-to-max-length info-list))
+    ;; 2. trim each part(info) of entry to it's planned max length (* prop ivy-filthy-rich-max-length)
+    (setq info-list (ivy-filthy-rich--trim-entry-to-max-length info-list))
     ;; 3. format info-list into a sequence of strings to be concated
     ;; 4. sequence to string
     ;; each info is an alist with key: value, prop, etc
-    (apply 'ifrich--concat-entry-sequence (ifrich--format-to-sequence info-list))))
+    (apply 'ivy-filthy-rich--concat-entry-sequence (ivy-filthy-rich--format-to-sequence info-list))))
 
-(defun ifrich--trim-entry-to-max-length (info-list)
+(defun ivy-filthy-rich--trim-entry-to-max-length (info-list)
 "Try to fit each info into its max-length and return the final INFO-LIST.
-Each info's max length is calculated by `ifrich-max-length' x info proportion (prop).
+Each info's max length is calculated by `ivy-filthy-rich-max-length' x info proportion (prop).
 
 Each info is an alist with key: value, prop, etc.
 
@@ -254,17 +257,17 @@ value in the value list. And this goes on.
 If there is only one value left in the value list and it doesn't fit,
 the function trims it from its tail and fit it to the max length.
 
-In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
-  (if (<= ifrich-max-length 0)
+In extrame cases this might return nil (when `ivy-filthy-rich-max-length' <= 0)"
+  (if (<= ivy-filthy-rich-max-length 0)
       (progn
-        (warn "ifrich-max-length has to be greater than 0! Current value is %s" ifrich-max-length)
+        (warn "ivy-filthy-rich-max-length has to be greater than 0! Current value is %s" ivy-filthy-rich-max-length)
         nil)
     ;; remove until fit
     ;; main logic starts here
     (dolist (info info-list)
-      (unless (ifrich--is-candidate info)
+      (unless (ivy-filthy-rich--is-candidate info)
         (let ((value-list (alist-get 'value info))
-              (info-max-len (floor (* (alist-get 'prop info) ifrich-max-length))))
+              (info-max-len (floor (* (alist-get 'prop info) ivy-filthy-rich-max-length))))
           ;; try next value until fit or only one value left
           (while (and (< info-max-len (length (car value-list)))
                       (< 1 (length value-list)))
@@ -276,7 +279,7 @@ In extrame cases this might return nil (when `ifrich-max-length' <= 0)"
                   (alist-get 'value info))))))
     info-list))
 
-(defun ifrich--format-to-sequence (info-list)
+(defun ivy-filthy-rich--format-to-sequence (info-list)
   "Turn a format (INFO-LIST) into a sequence of strings.
 The first step replaced the functions in format with a list of possible strings.
 The second step removes those possible strings that are too long.
@@ -296,7 +299,7 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
     (dolist (info info-list)
       ;; (print info-list)
       (let* ((value (car (alist-get 'value info)))
-             (max-info-len (floor (* ifrich-max-length (alist-get 'prop info))))
+             (max-info-len (floor (* ivy-filthy-rich-max-length (alist-get 'prop info))))
              ;; if value is shorter than max-info-length,
              ;; it needs to be padded.
              (extra-info-space (- max-info-len (length value)))
@@ -305,9 +308,9 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
                                    extra-info-space
                                  0))
              ;; right padded before left
-             (pad (make-string extra-info-space ifrich-padding))
-             (left-pad (if (equal 'left ifrich-pad-side) pad ""))
-             (right-pad (if (equal 'right ifrich-pad-side) pad ""))
+             (pad (make-string extra-info-space ivy-filthy-rich-padding))
+             (left-pad (if (equal 'left ivy-filthy-rich-pad-side) pad ""))
+             (right-pad (if (equal 'right ivy-filthy-rich-pad-side) pad ""))
              (value-with-pad ()))
         ;; coloring
         (let ((face-spec (alist-get 'face info)))
@@ -317,7 +320,7 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
         (setq value-with-pad
               (list left-pad value right-pad))
         ;; record candidate spec
-        (when (ifrich--is-candidate info)
+        (when (ivy-filthy-rich--is-candidate info)
           (setq candidate-index index)
           (setq candidate-planned-len max-info-len))
         ;; add to entry
@@ -326,7 +329,7 @@ Return \(entry-sequence candidate-index candidate-planned-len\)."
     ;; entry-sequence is a list of form: (left-pad value right-pad left-pad value right-pad))
     (list entry-sequence candidate-index candidate-planned-len)))
 
-(defun ifrich--concat-entry-sequence (seq candidate-index candidate-planned-length)
+(defun ivy-filthy-rich--concat-entry-sequence (seq candidate-index candidate-planned-length)
   "Concat all the elements in entry sequence SEQ together.
 CANDIDATE-INDEX is the index of candidate if you consider left-pad, value and right-pad one element.
 In another word, index of left-pad of candidate in SEQ is (* 3 CANDIDATE-INDEX),
@@ -354,32 +357,32 @@ cannnnnnnnnnnnnnd             part2"
         (setq candidate-planned-length
               (+ candidate-planned-length
                  (length (nth index-after-candidate seq))))
-        (setq seq (ifrich--delete-nth index-after-candidate seq)))
+        (setq seq (ivy-filthy-rich--delete-nth index-after-candidate seq)))
     ;; 2. concat everything together
     ;; 2.1 pad candidate to have length of candidate-planned-length
-      (ifrich--set-nth candidate-real-index seq
+      (ivy-filthy-rich--set-nth candidate-real-index seq
                        (concat candidate
                                (make-string
-                                (ifrich--zero-if-negative (- candidate-planned-length candidate-len))
-                                ifrich-padding))))
+                                (ivy-filthy-rich--zero-if-negative (- candidate-planned-length candidate-len))
+                                ivy-filthy-rich-padding))))
     ;; 2.2 concat everything
     (apply 'concat seq)))
 
 ;;
 ;;;; Helper functions
 
-(defun ifrich--zero-if-negative (num)
+(defun ivy-filthy-rich--zero-if-negative (num)
   "If NUM < 0, return 0, else return NUM."
   (if (< num 0)
       0
     num))
 
-(defun ifrich--delete-nth (index seq)
+(defun ivy-filthy-rich--delete-nth (index seq)
   "Delete the INDEX th element of SEQ."
   (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq))
   seq)
 
-(defun ifrich--set-nth (index seq newval)
+(defun ivy-filthy-rich--set-nth (index seq newval)
   "Set the INDEX th element of SEQ to NEWVAL."
   (setcar (nthcdr index seq) newval))
 
@@ -392,11 +395,11 @@ cannnnnnnnnnnnnnd             part2"
 ;;   (add-to-list 'info-list format-element)
 ;;   info-list)
 
-(defun ifrich--calculate-entry-length (seq)
+(defun ivy-filthy-rich--calculate-entry-length (seq)
   "Calculate the length of the candidate SEQ (a list of string) (one line in ivy buffer)."
   (apply 'concat seq))
 
-(defun ifrich--is-candidate (info)
+(defun ivy-filthy-rich--is-candidate (info)
   "Check if the INFO element represents candidate."
   (if (alist-get 'candidate info)
       t
