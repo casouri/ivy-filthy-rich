@@ -147,7 +147,7 @@ Avaliable keys for alists are:
 - face :: The face you want the info be in.
           
 - candidate :: A boolean that marks which info is original candidate. There can be only one candidate.
-               And there is no need to add =(candidate . nil)= to other infos.
+               And there is *no* need to add =(candidate . nil)= to other infos.
                
 
 *** 2. deploy your format
