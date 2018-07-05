@@ -83,11 +83,16 @@ For example:
 #+BEGIN_SRC emacs-lisp
 (defun ifrich--get-major-mode (candidate)
   "Return major mode of buffer (CANDIDATE)."
-  (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode (get-buffer candidate))))))
+  (let ((buffer (get-buffer candidate)))
+    (if buffer
+        (list (substring-no-properties (symbol-name (buffer-local-value 'major-mode buffer))))
+      '(""))))
 #+END_SRC
 
 This function returns the major mode in which the candidate is.
 Actually, it returns a list, rather than a string. The reason is explained below.
+
+Also, make sure your don't return an empty list and handle errors properly in info function.
 
 
 *** 1. declare the format
@@ -122,10 +127,21 @@ Avaliable keys for alists are:
            Those strings sorts from the longest to the shortest.
            =ivy-filth-rich= will try to use the longest string,
            if it doesn't fit, =ivy-filthy-rich= will try the next one, and so on.
+           If the last on is still too long, it will be truncated.
+           Original candidate is never truncated, actually, it will "eat" other parts'
+           space if there is not enough.
+           
+           Some ivy/counsel functions have default transformers,
+           you might want to include them into your custom format.
+           A complete list can be found in source code under
+           =;;;; Ivy default transformers=
            
 - prop :: the length that the info can occupy. It is a fraction against =ifrich-max-length=.
           =0.3= means the piece of info will get 30% of the max length.
           All the props don't have to add up to 1, though.
+          For candidates, you can just assign a average number because
+          they are never truncated. The extra space will be taken from other parts
+          to ensure candidate will be displayed prpperly.
           
 - face :: The face you want the info be in.
           
