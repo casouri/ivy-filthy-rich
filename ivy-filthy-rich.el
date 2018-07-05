@@ -68,11 +68,11 @@ If it is zero, the max-length is (1- (frame-width))"
   :group 'ivy-filthy-rich)
 
 (defvar ifrich-transformer-alist
-  '(('ivy-switch-buffer          . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
-    ('counsel-describe-function  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
-    ('counsel-describe-variable  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
-    ('counsel-M-x                . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
-    ('counsel-describe-face      . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
+  '((ivy-switch-buffer          . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-switch-buffer-format)))
+    (counsel-describe-function  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-function-format)))
+    (counsel-describe-variable  . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-variable-format)))
+    (counsel-M-x                . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-M-x-format)))
+    (counsel-describe-face      . (lambda (candidate) (ifrich--format-candidate candidate ifrich-default-describe-face-format)))
     )
   "An alist of all the to-be-transformed ivy functions and their corresponding transformers.
 \(\(function . transformer)\\)")
