@@ -35,10 +35,14 @@
 ;;
 ;;; Variabale & Customize
 
-(defgroup ivy-filthy-rich nil
+(defgroup ivy-filthy-rich
+  '((ivy-filthy-rich-padding     . customize-variable)
+    (ivy-filthy-rich-pad-side    . customize-variable)
+    (ivy-filthy-rich-max-length  . customize-variable)
+    (ivy-filthy-rich-format-func . customize-variable))
   "Customizations of ivy-filthy-rich"
   :prefix "ivy-filthy-rich-"
-  :group 'ivy-filthy-rich)
+  :group 'convenience)
 
 (defcustom ivy-filthy-rich-padding ?\s
   "The padding of `ivy-filthy-rich-delimiter'.
@@ -66,7 +70,8 @@ If it is zero, the max-length is (1- (frame-width))"
   :group 'ivy-filthy-rich)
 
 (defcustom ivy-filthy-rich-format-func 'ivy-filthy-rich-format-candidate
-  "The function that returns the final riched ivy candidate."
+  "The function that returns the final riched ivy candidate.
+No effect yet."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
