@@ -36,10 +36,10 @@
 ;;; Variabale & Customize
 
 (defgroup ivy-filthy-rich
-  '((ivy-filthy-rich-padding     . customize-variable)
-    (ivy-filthy-rich-pad-side    . customize-variable)
-    (ivy-filthy-rich-max-length  . customize-variable)
-    (ivy-filthy-rich-format-func . customize-variable))
+  '((ivy-filthy-rich-padding     customize-variable)
+    (ivy-filthy-rich-pad-side    customize-variable)
+    (ivy-filthy-rich-max-length  customize-variable)
+    (ivy-filthy-rich-format-func customize-variable))
   "Customizations of ivy-filthy-rich"
   :prefix "ivy-filthy-rich-"
   :group 'ivy)
