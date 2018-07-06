@@ -362,7 +362,7 @@ cannnnnnnnnnnnnnd             part2"
         (setq candidate-planned-length
               (+ candidate-planned-length
                  (length (nth index-after-candidate seq))))
-        (setq seq (ivy-filthy-rich--delete-nth index-after-candidate seq)))
+        (ivy-filthy-rich--delete-nth index-after-candidate seq))
     ;; 2. concat everything together
     ;; 2.1 pad candidate to have length of candidate-planned-length
       (ivy-filthy-rich--set-nth candidate-real-index seq
@@ -384,9 +384,8 @@ cannnnnnnnnnnnnnd             part2"
 
 (defun ivy-filthy-rich--delete-nth (index seq)
   "Delete the INDEX th element of SEQ.
-Return result sequence, SEQ is __not__ modified."
-  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq))
-  seq)
+Return result sequence, SEQ __is__ modified."
+  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq)))
 
 (defun ivy-filthy-rich--set-nth (index seq newval)
   "Set the INDEX th element of SEQ to NEWVAL.
