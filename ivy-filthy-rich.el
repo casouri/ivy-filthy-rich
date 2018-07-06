@@ -385,10 +385,7 @@ cannnnnnnnnnnnnnd             part2"
 (defun ivy-filthy-rich--delete-nth (index seq)
   "Delete the INDEX th element of SEQ.
 Return result sequence, SEQ __is__ modified."
-  (let* ((cdr1 seq)
-         (cdr1 (dotimes (num (1- index) cdr1) (setq cdr1 (cdr cdr1))))
-         (cdr2 (cdr (cdr cdr1))))
-    (setcdr cdr1 cdr2)))
+  (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq)))
 
 (defun ivy-filthy-rich--set-nth (index seq newval)
   "Set the INDEX th element of SEQ to NEWVAL.
