@@ -42,7 +42,7 @@
     (ivy-filthy-rich-format-func . customize-variable))
   "Customizations of ivy-filthy-rich"
   :prefix "ivy-filthy-rich-"
-  :group 'convenience)
+  :group 'ivy)
 
 (defcustom ivy-filthy-rich-padding ?\s
   "The padding of `ivy-filthy-rich-delimiter'.
