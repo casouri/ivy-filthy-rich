@@ -387,10 +387,14 @@ cannnnnnnnnnnnnnd             part2"
 Return result sequence, SEQ __is__ modified."
   (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq)))
 
-(defun ivy-filthy-rich--set-nth (index seq newval)
-  "Set the INDEX th element of SEQ to NEWVAL.
-SEQ __is__ modified."
-  (setcar (nthcdr index seq) newval))
+(defun ivy-filthy-rich--delete-nth (index seq)
+  "Delete the INDEX th element of SEQ.
+Return result sequence, SEQ __is__ modified."
+  (if (equal index 0)
+      (progn
+        (setcar seq (car (cdr seq)))
+        (setcdr seq (cdr (cdr seq))))
+    (setcdr (nthcdr (1- index) seq) (nthcdr (1+ index) seq))))
 
 ;; test code
 ;; (let* ((format-element '((value . (lambda (str) "hahaha"))))
