@@ -162,9 +162,11 @@ Make your tranformer by =lambda= and add it to =ivy-filthy-rich-transformer-alis
 Restart =ivy-filthy-rich-mode= if its already on.
     
 #+BEGIN_SRC emacs-lisp
+(add-to-list 'ivy-filthy-rich-transformer-alist (ivy-filthy-rich-make-transformer 'ivy-command-you-want-to-modify 'your-custom-format))
 (add-to-list 'ivy-filthy-rich-transformer-alist '(ivy-function-you-want-to-modify . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate your-customized-format))))
 #+END_SRC
 
+The two expressions are equivilant. 
 =ivy-filthy-rich--format-candidate= takes a candidate string and a format, and returns the modified string.
 
 * Credits

@@ -222,6 +222,13 @@ Format rule in info (C-h i).")
       ;; if other people changed it after us, don't do anything
       (unless (eq current-transformer func) (plist-put ivy--display-transformers-list func original-transformer)))))
 
+(defun ivy-filthy-rich-make-transformer (command format)
+  "Make a \"transformer\" that can be added to `ivy-filthy-rich-transformer-alist'.
+COMMAND is the command you want to modify, format is a transformer format.
+Check out more on format in README."
+  `(,command . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ,format)))
+  )
+
 ;;
 ;;; Logic Function
 ;;
