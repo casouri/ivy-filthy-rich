@@ -188,8 +188,8 @@ No effect yet."
 ;;
 
 (define-minor-mode ivy-filthy-rich-mode
-  "A global minor mode that adds information to ivy candidates. I'm F****** Rich."
-  :lighter "Ivy-Filthy-Rich"
+  "A global minor mode that adds information to ivy candidates. I'm F Rich."
+  :lighter "IFRich"
   :global t
   :require 'ivy-filthy-rich
   (if ivy-filthy-rich-mode
