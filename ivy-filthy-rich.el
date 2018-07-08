@@ -113,32 +113,27 @@ No effect yet."
   '(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
     ((value . ivy-filthy-rich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
     ((value . ivy-filthy-rich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
-  "The default format for `ivy-switch-buffer'.
-Format rule in info (C-h i).")
+  "The default format for `ivy-switch-buffer'.")
 
 (defvar ivy-filthy-rich-default-describe-function-format
   '(((value . (lambda (candidate) (list (counsel-describe-function-transformer candidate)))) (prop . 0.3) (candidate . t))
     ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
-  "The default format for `counsel-describe-function'.
-Format rule in info (C-h i).")
+  "The default format for `counsel-describe-function'.")
 
 (defvar ivy-filthy-rich-default-M-x-format 
   '(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
     ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
-  "The default format for `counsel-M-x'.
-Format rule in info (C-h i).")
+  "The default format for `counsel-M-x'.")
 
 (defvar ivy-filthy-rich-default-describe-variable-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
     ((value . ivy-filthy-rich--get-doc-property) (prop . 0.6) (face . (:foreground "#61AFEF"))))
-  "The default format for `counsel-describe-variable'.
-Format rule in info (C-h i).")
+  "The default format for `counsel-describe-variable'.")
 
 (defvar ivy-filthy-rich-default-describe-face-format
   '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
     ((value . ivy-filthy-rich--get-face) (prop . 0.7)))
-  "The default format for `counsel-faces'.
-Format rule in info (C-h i).")
+  "The default format for `counsel-faces'.")
 
 
 ;;
