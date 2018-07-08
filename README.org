@@ -1,5 +1,11 @@
 #+TITLE: ivy-filthy-rich.el
 
+* Important
+
+ivy-rich pushed a new update that enables users to customize transformers,
+so there isn't much difference in functionality between ivy-filthy-rich
+and ivy-rich, only minor variances. 
+
 [[./rich.png]]
 
 This package adds more information on ivy candidates.
