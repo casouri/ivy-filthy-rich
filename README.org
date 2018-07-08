@@ -115,9 +115,10 @@ Default ones are under
 For example,
 #+BEGIN_SRC emacs-lisp
 (defvar ivy-filthy-rich-default-switch-buffer-format
-  '(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
-    ((value . ivy-filthy-rich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
-    ((value . ivy-filthy-rich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
+  '(((value . (lambda (candidate) 
+                 (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
+    ((value . ivy-filthy-rich--get-major-mode)                      (prop . 0.2) (face . (:foreground "#61AFEF")))
+    ((value . ivy-filthy-rich--get-dir)                             (prop . 0.6) (face . (:foreground "#98C379"))))
   "The default format for `ivy-switch-buffer'.
 Format rule in info (C-h i).")
 #+END_SRC
