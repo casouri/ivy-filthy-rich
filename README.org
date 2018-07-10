@@ -6,7 +6,7 @@ ivy-rich pushed a new update that enables users to customize transformers,
 so there isn't much difference in functionality between ivy-filthy-rich
 and ivy-rich, only minor variances. 
 Therefore, I'm going to help the author of ivy-rich to improve ivy-rich.
-And ivy-filthy-rich will **not** be in melpa.
+And ivy-filthy-rich will *not* be in melpa.
 
 
 [[./rich.png]]
