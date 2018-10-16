@@ -75,6 +75,15 @@ No effect yet."
   :type 'symbol
   :group 'ivy-filthy-rich)
 
+(defcustom ivy-filthy-rich-color-list '#1=("#61AFEF" . ("#98C379" . #1#))
+  "A list of colors that ivy-filth-rich can use for it's columns.
+Look into any ivy-filthy-rich format to see how it's used.
+Basically (nth n ivy-filthy-rich-color-list).
+
+Note this is a circular list so the colors will just repeat."
+  :type 'list
+  :group 'ivy-filthy-rich)
+
 (defvar ivy-filthy-rich-transformer-alist
   '((ivy-switch-buffer          . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-switch-buffer-format)))
     (counsel-describe-function  . (lambda (candidate) (ivy-filthy-rich--format-candidate candidate ivy-filthy-rich-default-describe-function-format)))
@@ -110,24 +119,24 @@ No effect yet."
 ;; candiate info has to have a key 'candidate equal to t
 
 (defvar ivy-filthy-rich-default-switch-buffer-format
-  '(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
-    ((value . ivy-filthy-rich--get-major-mode) (prop . 0.2) (face . (:foreground "#61AFEF")))
-    ((value . ivy-filthy-rich--get-dir) (prop . 0.6) (face . (:foreground "#98C379"))))
+  `(((value . (lambda (candidate) (list (ivy-switch-buffer-transformer candidate)))) (prop . 0.2) (candidate . t))
+    ((value . ivy-filthy-rich--get-major-mode) (prop . 0.2) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list))))
+    ((value . ivy-filthy-rich--get-dir) (prop . 0.6) (face . (:foreground ,(nth 1 ivy-filthy-rich-color-list)))))
   "The default format for `ivy-switch-buffer'.")
 
 (defvar ivy-filthy-rich-default-describe-function-format
-  '(((value . (lambda (candidate) (list (counsel-describe-function-transformer candidate)))) (prop . 0.3) (candidate . t))
-    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+  `(((value . (lambda (candidate) (list (counsel-describe-function-transformer candidate)))) (prop . 0.3) (candidate . t))
+    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list)))))
   "The default format for `counsel-describe-function'.")
 
 (defvar ivy-filthy-rich-default-M-x-format 
-  '(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
-    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+  `(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
+    ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list)))))
   "The default format for `counsel-M-x'.")
 
 (defvar ivy-filthy-rich-default-describe-variable-format
-  '(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
-    ((value . ivy-filthy-rich--get-doc-property) (prop . 0.6) (face . (:foreground "#61AFEF"))))
+  `(((value . (lambda (candidate) (list candidate))) (prop . 0.3) (candidate . t))
+    ((value . ivy-filthy-rich--get-doc-property) (prop . 0.6) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list)))))
   "The default format for `counsel-describe-variable'.")
 
 (defvar ivy-filthy-rich-default-describe-face-format
