@@ -6,6 +6,9 @@ Update (<2018-12-16 Sun>): I don't use ivy anymore (moved to helm), so I won't m
 ivy-rich pushed a new update that enables users to customize transformers,
 so there isn't much difference in functionality between ivy-filthy-rich
 and ivy-rich, only minor variances. 
+I'll keep using and maintining ivy-filthy-rich. 
+But It will **not** be in melpa since ivy-rich is already there.
+
 
 [[./rich.png]]
 
