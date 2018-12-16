@@ -1,6 +1,7 @@
 #+TITLE: ivy-filthy-rich.el
 
 * Important
+Update (<2018-12-16 Sun>): I don't use ivy anymore (moved to helm), so I won't maintain ivy-filthy-rich from now on.
 
 ivy-rich pushed a new update that enables users to customize transformers,
 so there isn't much difference in functionality between ivy-filthy-rich
