@@ -95,7 +95,7 @@ Note this is a circular list so the colors will just repeat."
 \(\(function . transformer)\\)")
 
 
-(defvar ivy-filthy-rich--ivy-original-transformer-plist ivy--display-transformers-list)
+(defvar ivy-filthy-rich--ivy-original-transformer-plist ivy--display-transformers-alist)
 
 ;;
 ;;; Default format
@@ -210,7 +210,7 @@ Note this is a circular list so the colors will just repeat."
   (dolist (pair ivy-filthy-rich-transformer-alist)
     (let* ((func (car pair))
            (transformer (cdr pair))
-           (original-transformer (plist-get ivy--display-transformers-list func)))
+           (original-transformer (plist-get ivy--display-transformers-alist func)))
       ;; backup original transformer
       (when original-transformer (plist-put ivy-filthy-rich--ivy-original-transformer-plist func original-transformer))
       (ivy-set-display-transformer func transformer))))
@@ -220,11 +220,11 @@ Note this is a circular list so the colors will just repeat."
   (dolist (pair ivy-filthy-rich-transformer-alist)
     (let* ((func (car pair))
            (transformer (cdr pair))
-           (current-transformer (plist-get ivy--display-transformers-list func))
+           (current-transformer (plist-get ivy--display-transformers-alist func))
            (original-transformer (plist-get ivy-filthy-rich--ivy-original-transformer-plist func)))
       ;; if no other people changes the transformer, set it back to original transformer
       ;; if other people changed it after us, don't do anything
-      (unless (eq current-transformer func) (plist-put ivy--display-transformers-list func original-transformer)))))
+      (unless (eq current-transformer func) (plist-put ivy--display-transformers-alist func original-transformer)))))
 
 (defun ivy-filthy-rich-make-transformer (command format)
   "Make a \"transformer\" that can be added to `ivy-filthy-rich-transformer-alist'.
