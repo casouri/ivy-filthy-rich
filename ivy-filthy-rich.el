@@ -129,7 +129,7 @@ Note this is a circular list so the colors will just repeat."
     ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list)))))
   "The default format for `counsel-describe-function'.")
 
-(defvar ivy-filthy-rich-default-M-x-format 
+(defvar ivy-filthy-rich-default-M-x-format
   `(((value . (lambda (candidate) (list (counsel-M-x-transformer candidate)))) (prop . 0.3) (candidate . t))
     ((value . ivy-filthy-rich--get-doc) (prop . 0.6) (face . (:foreground ,(nth 0 ivy-filthy-rich-color-list)))))
   "The default format for `counsel-M-x'.")
